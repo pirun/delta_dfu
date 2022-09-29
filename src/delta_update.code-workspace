@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"name": "delta_update",
+			"path": ".."
+		}
+	],
+	"settings": {
+		"nrf-connect.toolchain.path": "${nrf-connect.toolchain:2.1.0}",
+		"nrf-connect.applications": [
+			"c:\\Work\\git\\delta_update"
+		],
+		"nrf-connect.topdir": "${nrf-connect.sdk:2.1.0}"
+	}
+}
