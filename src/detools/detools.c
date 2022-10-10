@@ -821,6 +821,7 @@ static int callbacks_process(struct detools_apply_patch_t *apply_patch_p,
                                               &chunk[0],
                                               chunk_size);
             patch_offset += chunk_size;
+            printf("patch_offset=%d\t patch_size=%d\t progress = %d%%\n", patch_offset,patch_size,patch_offset*100/patch_size);
         } else {
             res = -DETOOLS_IO_FAILED;
         }

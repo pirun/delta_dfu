@@ -297,12 +297,8 @@ CONFIG_DEBUG_THREAD_INFO:STRING=y
 //Path to a program.
 DTC:FILEPATH=C:/NCS_SDK/toolchains/v2.1.0/opt/bin/dtc.exe
 
-//If desired, you can build the application using the DT configuration
-// settings specified in an alternate .overlay file using this
-// parameter. These settings will override the settings in the
-// board's .dts file. Multiple files may be listed, e.g. DTC_OVERLAY_FILE="dts1.overlay
-// dts2.overlay"
-DTC_OVERLAY_FILE:STRING=
+//No help, variable specified on the command line.
+DTC_OVERLAY_FILE:STRING=c:/Work/git/delta_update/nrf52840dk_nrf52840.overlay
 
 //Path to a program.
 GPERF:FILEPATH=C:/NCS_SDK/toolchains/v2.1.0/opt/bin/gperf.exe
@@ -355,6 +351,9 @@ ZEPHYR_GIT_DIR:PATH=C:/NCS_SDK/v2.1.0/zephyr/.git/index
 //Path to Zephyr git repository index file
 ZEPHYR_GIT_INDEX:PATH=ZEPHYR_GIT_INDEX-NOTFOUND
 
+//Path to merged image in Intel Hex format
+ZEPHYR_RUNNER_CONFIG_KERNEL_HEX:STRING=
+
 //Zephyr SDK install directory
 ZEPHYR_SDK_INSTALL_DIR:PATH=C:/NCS_SDK/toolchains/v2.1.0/opt/zephyr-sdk
 
@@ -381,6 +380,12 @@ button_BINARY_DIR:STATIC=C:/Work/git/delta_update/build
 
 //Value Computed by CMake
 button_SOURCE_DIR:STATIC=C:/Work/git/delta_update
+
+//Extra config fragments for mcuboot child image
+mcuboot_DTC_OVERLAY_FILE:STRING=;C:/NCS_SDK/v2.1.0/nrf/modules/mcuboot/usb.overlay
+
+//Extra config fragments for mcuboot child image
+mcuboot_OVERLAY_CONFIG:STRING=C:/NCS_SDK/v2.1.0/nrf/subsys/partition_manager/partition_manager_enabled.conf;C:/Work/git/delta_update/child_image/mcuboot.conf
 
 
 ########################
@@ -502,7 +507,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=119
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=126
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -546,12 +551,11 @@ CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //The build type
 CONF_FILE_BUILD_TYPE:INTERNAL=
 //Details about finding Python3
-FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[C:/NCS_SDK/toolchains/v2.1.0/opt/bin/python.exe][cfound components: Interpreter ][v3.8.2(3.8)]
+FIND_PACKAGE_MESSAGE_DETAILS_Python3:INTERNAL=[C:/NCS_SDK/toolchains/v2.1.0/opt/bin/python.exe][cfound components: Interpreter ][v3.8.2()]
 //West
 WEST:INTERNAL=C:/NCS_SDK/toolchains/v2.1.0/opt/bin/python.exe;-m;west
 //a configuration file for the runners Python package
 ZEPHYR_RUNNERS_YAML:INTERNAL=C:/Work/git/delta_update/build/zephyr/runners.yaml
-//Path to a program.
 _Python3_EXECUTABLE:INTERNAL=C:/NCS_SDK/toolchains/v2.1.0/opt/bin/python.exe
 //Python3 Properties
 _Python3_INTERPRETER_PROPERTIES:INTERNAL=Python;3;8;2;64;;cp38-win_amd64.pyd;C:\NCS_SDK\toolchains\v2.1.0\opt\bin\Lib;C:\NCS_SDK\toolchains\v2.1.0\opt\bin\Lib;C:\NCS_SDK\toolchains\v2.1.0\opt\bin\Lib\site-packages;C:\NCS_SDK\toolchains\v2.1.0\opt\bin\Lib\site-packages

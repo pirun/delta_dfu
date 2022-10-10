@@ -1124,4 +1124,6 @@ zephyr_udc0: &usbd {
  status = "okay";
 };
 # 1 "<command-line>" 2
+# 1 "c:/Work/git/delta_update/nrf52840dk_nrf52840.overlay" 1
+# 1 "<command-line>" 2
 # 1 "C:/NCS_SDK/v2.1.0/zephyr/misc/empty_file.c"

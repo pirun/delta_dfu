@@ -11,8 +11,12 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/printk.h>
 #include <inttypes.h>
+#include <zephyr/dfu/mcuboot.h>
+#include "delta/delta.h"
 
 #define SLEEP_TIME_MS	1000
+
+#define FW_VERSION		"1.0.0"
 
 /*
  * Get button configuration from the devicetree sw0 alias. This is mandatory.
@@ -21,6 +25,11 @@
 #if !DT_NODE_HAS_STATUS(SW0_NODE, okay)
 #error "Unsupported board: sw0 devicetree alias is not defined"
 #endif
+
+/* SoC embedded NVM */
+#define FLASH_NODEID 	DT_CHOSEN(zephyr_flash_controller)
+
+
 static const struct gpio_dt_spec button = GPIO_DT_SPEC_GET_OR(SW0_NODE, gpios,{0});
 static struct gpio_callback button_cb_data;
 
@@ -33,12 +42,13 @@ static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led0), gpios,{0});
 void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
 	printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
-
+	gpio_pin_toggle_dt(&led);
 }
 
 void main(void)
 {
 	int ret;
+	struct flash_mem *flash_pt;
 
 	if (!device_is_ready(button.port)) {
 		printk("Error: button device %s is not ready\n", button.port->name);
@@ -75,21 +85,32 @@ void main(void)
 		}
 	}
 
+	flash_pt = k_malloc(sizeof(struct flash_mem));
+	flash_pt->device = DEVICE_DT_GET(FLASH_NODEID);
+	if(!flash_pt->device) {
+		return;
+	}
+	// uint32_t patch_header[2];
+	// int rc = flash_read(flash_pt->device, STORAGE_OFFSET, patch_header, sizeof(patch_header));
+	// if(0 == rc)
+	// {
+	// 	printk("Flash read success!!!\r\n");
+	// }
+
 	printk("Press the button\n");
 	if (led.port) {
 		while (1) {
-			/* If we have an LED, match its state to the button's. */
 			int val = gpio_pin_get_dt(&button);
-			gpio_pin_set_dt(&led, val);
+			//gpio_pin_set_dt(&led, val);
 			if (val > 0) {
-				printk("start delta upgrade...... \r\n");
-				// ret = delta_check_and_apply(flash_pt);
-				// if (ret) {
-				// 	#if PRINT_ERRORS == 1
-				// 	printk("%s", delta_error_as_string(ret));
-				// 	#endif
-				// 	return;
-				// }
+				printk("start delta upgrade to version %s!!!please wait...... \r\n", FW_VERSION);
+				ret = delta_check_and_apply(flash_pt);
+				if (ret) {
+					#if PRINT_ERRORS == 1
+					printk("%s", delta_error_as_string(ret));
+					#endif
+					return;
+				}
 			}
 			//k_msleep(SLEEP_TIME_MS);
 		}

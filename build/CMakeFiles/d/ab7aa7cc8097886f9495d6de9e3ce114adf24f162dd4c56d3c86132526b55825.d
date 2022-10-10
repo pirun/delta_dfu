@@ -34,6 +34,7 @@ zephyr/linker.cmd: \
   C:/NCS_SDK/v2.1.0/zephyr/include/zephyr/linker/linker-tool.h \
   C:/NCS_SDK/v2.1.0/zephyr/include/zephyr/linker/linker-tool-gcc.h \
   C:/NCS_SDK/v2.1.0/zephyr/include/zephyr/sys/mem_manage.h \
+  zephyr/include/generated/pm_config.h \
   C:/NCS_SDK/v2.1.0/zephyr/include/zephyr/linker/rel-sections.ld \
   zephyr/include/generated/snippets-rom-start.ld \
   C:/NCS_SDK/v2.1.0/zephyr/arch/common/rom_start_offset.ld \

@@ -10,6 +10,22 @@
 		"nrf-connect.applications": [
 			"c:\\Work\\git\\delta_update"
 		],
-		"nrf-connect.topdir": "${nrf-connect.sdk:2.1.0}"
+		"nrf-connect.topdir": "${nrf-connect.sdk:2.1.0}",
+		"files.associations": {
+			"zephyr.h": "c",
+			"device.h": "c",
+			"flash_map.h": "c",
+			"reboot.h": "c",
+			"delta.h": "c",
+			"array": "c",
+			"*.tcc": "c",
+			"chrono": "c",
+			"deque": "c",
+			"string": "c",
+			"vector": "c",
+			"memory_resource": "c",
+			"optional": "c",
+			"functional": "c"
+		}
 	}
 }

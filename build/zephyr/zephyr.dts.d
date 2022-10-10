@@ -18,4 +18,5 @@ empty_file.o: C:/NCS_SDK/v2.1.0/zephyr/misc/empty_file.c \
  C:/NCS_SDK/v2.1.0/zephyr/include/zephyr/dt-bindings/pwm/pwm.h \
  C:/NCS_SDK/v2.1.0/zephyr/dts/common/freq.h \
  C:/NCS_SDK/v2.1.0/zephyr/dts/arm/nordic/override.dtsi \
- C:/NCS_SDK/v2.1.0/zephyr/boards/arm/nrf52840dk_nrf52840/nrf52840dk_nrf52840-pinctrl.dtsi
+ C:/NCS_SDK/v2.1.0/zephyr/boards/arm/nrf52840dk_nrf52840/nrf52840dk_nrf52840-pinctrl.dtsi \
+ c:/Work/git/delta_update/nrf52840dk_nrf52840.overlay

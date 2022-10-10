@@ -14,15 +14,15 @@ static int erase_page(struct flash_mem *flash, off_t offset)
 {
 	offset = offset - offset%PAGE_SIZE; /* find start of page */
 
-	if (flash_write_protection_set(flash->device, false)) {
-		return -DELTA_CLEARING_ERROR;
-	}
+	// if (flash_write_protection_set(flash->device, false)) {
+	// 	return -DELTA_CLEARING_ERROR;
+	// }
 	if (flash_erase(flash->device, offset, PAGE_SIZE)) {
 		return -DELTA_CLEARING_ERROR;
 	}
-	if (flash_write_protection_set(flash->device, true)) {
-		return -DELTA_CLEARING_ERROR;
-	}
+	// if (flash_write_protection_set(flash->device, true)) {
+	// 	return -DELTA_CLEARING_ERROR;
+	// }
 
 	return DELTA_OK;
 }
@@ -46,15 +46,15 @@ static int delta_flash_write(void *arg_p,
 	if (!flash) {
 		return -DELTA_CASTING_ERROR;
 	}
-	if (flash_write_protection_set(flash->device, false)) {
-		return -DELTA_WRITING_ERROR;
-	}
+	// if (flash_write_protection_set(flash->device, false)) {
+	// 	return -DELTA_WRITING_ERROR;
+	// }
 	if (flash_write(flash->device, flash->to_current, buf_p, size)) {
 		return -DELTA_WRITING_ERROR;
 	}
-	if (flash_write_protection_set(flash->device, true)) {
-		return -DELTA_WRITING_ERROR;
-	}
+	// if (flash_write_protection_set(flash->device, true)) {
+	// 	return -DELTA_WRITING_ERROR;
+	// }
 
 	flash->to_current += (off_t) size;
 	if (flash->to_current >= flash->to_end) {
@@ -158,6 +158,9 @@ static int delta_init_flash_mem(struct flash_mem *flash)
 
 	flash->write_buf = 0;
 
+	printf("\nfrom_current=%0X\t size=%0X\t to_current=%0X\t size=%0X\t patch_current=%0X\t size=%0X\n",
+		flash->from_current,PRIMARY_SIZE,flash->to_current,SECONDARY_SIZE,flash->patch_current,STORAGE_SIZE);
+
 	return DELTA_OK;
 }
 
@@ -187,7 +190,8 @@ int delta_check_and_apply(struct flash_mem *flash)
 	int ret;
 
 	ret = delta_read_patch_header(flash,&patch_size);
-
+	printf("patch_size = %d\n", patch_size);
+#if 1
 	if (ret < 0) {
 		return ret;
 	} else if (patch_size > 0) {
@@ -209,36 +213,34 @@ int delta_check_and_apply(struct flash_mem *flash)
 		}
 		sys_reboot(SYS_REBOOT_COLD);
 	}
+#endif
 
 	return DELTA_OK;
 }
 
-int delta_read_patch_header(struct flash_mem *flash, uint32_t size)
+int delta_read_patch_header(struct flash_mem *flash, uint32_t *size)
 {
 	uint32_t new_patch, reset_msg, patch_header[2];
+	static struct flash_pages_info page_info;
 
 	new_patch = 0x5057454E; // ASCII for "NEWP" signaling new patch
 	reset_msg = 0x0U; // reset "NEWP"
 
+	/* For tests purposes use page (in primary_flash = 4 kB) */
+	flash_get_page_info_by_offs(flash->device, STORAGE_OFFSET,&page_info);
+	printf("start_offset=%0X\t storage_size=%d\t size=%d\t index=%d\n",page_info.start_offset, STORAGE_SIZE, page_info.size, page_info.index);
+
 	if (flash_read(flash->device, STORAGE_OFFSET, patch_header, sizeof(patch_header))) {
 		return -DELTA_PATCH_HEADER_ERROR;
 	}
-
+	printk("read_data[0]=%0X\t read_data[1]=%0X\r\n", patch_header[0], patch_header[1]);
 	if (new_patch!=patch_header[0]) {
 		return DELTA_OK;
 	}
 
-	size = patch_header[1];
-
-	if (flash_write_protection_set(flash->device, false)) {
-		return -DELTA_PATCH_HEADER_ERROR;
-	}
+	*size = patch_header[1];
 
 	if (flash_write(flash->device, STORAGE_OFFSET, &reset_msg, sizeof(reset_msg))) {
-		return -DELTA_PATCH_HEADER_ERROR;
-	}
-
-	if (flash_write_protection_set(flash->device, true)) {
 		return -DELTA_PATCH_HEADER_ERROR;
 	}
 
