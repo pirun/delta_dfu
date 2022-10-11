@@ -16,7 +16,7 @@
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"1.2.0"
+#define FW_VERSION		"1.1.0"
 
 //#define PRINT_ERRORS 	 1
 
@@ -42,11 +42,11 @@ static bool btnPressFlag = false;
  * The led0 devicetree alias is optional. If present, we'll use it
  * to turn on the LED whenever the button is pressed.
  */
-static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led2), gpios,{0});
+static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led1), gpios,{0});
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-	printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
+	printk("Version:%s	Button pressed at %" PRIu32 "\n", FW_VERSION,k_cycle_get_32());
 	gpio_pin_toggle_dt(&led);
 	btnPressFlag = true;
 }

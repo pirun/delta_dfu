@@ -25,6 +25,7 @@ DUMP_DIR := $(BIN_DIR)/flash_dumps
 SOURCE_PATH := $(IMG_DIR)/source.bin
 TARGET_PATH := $(IMG_DIR)/target.bin
 PATCH_PATH := $(PATCH_DIR)/patch.bin
+REVERSE_PATCH_PATH := $(PATCH_DIR)/reverse_patch.bin
 SLOT0_PATH := $(DUMP_DIR)/slot0.bin
 SLOT1_PATH := $(DUMP_DIR)/slot1.bin
 PATCH_SLOT_PATH := $(DUMP_DIR)/patch.bin
@@ -100,7 +101,7 @@ flash-boot:
 flash-patch:
 	@echo "Flashing latest patch to patch partition..."
 	$(PYFLASH) -a $(PATCH_OFFSET) -t nrf52840 $(PATCH_PATH)
-#	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
+	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
 	
 create-patch:
 	@echo "Creating patch..."
@@ -108,6 +109,13 @@ create-patch:
 	rm -f $(PATCH_PATH)
 	$(DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)
 	$(PAD_SCRIPT) $(PATCH_PATH) $(MAX_PATCH_SIZE) $(PATCH_HEADER_SIZE)
+
+create-reverse-patch:
+	@echo "Creating reverse patch..."
+	mkdir -p $(PATCH_DIR)
+	rm -f $(REVERSE_PATCH_PATH)
+	$(DETOOLS) $(TARGET_PATH) $(SOURCE_PATH) $(REVERSE_PATCH_PATH)
+	$(PAD_SCRIPT) $(REVERSE_PATCH_PATH) $(MAX_PATCH_SIZE) $(PATCH_HEADER_SIZE)
 	
 connect:
 	@echo "Connecting to device console.."

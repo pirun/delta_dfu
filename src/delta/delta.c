@@ -212,9 +212,9 @@ int delta_check_and_apply(struct flash_mem *flash)
 		k_msleep(1000);		//for print debug message, added by Noy
 		/** below code should be effect when release, now just for test */
 		// if (boot_request_upgrade(BOOT_UPGRADE_PERMANENT)) {
-		// 	return -1;
+		// return -1;
 		// }
-		// sys_reboot(SYS_REBOOT_COLD);
+		sys_reboot(SYS_REBOOT_COLD);
 	}
 	
 #endif
