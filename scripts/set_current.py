@@ -7,7 +7,7 @@ def main(flashed_path,source_path):
     print("Press \'y\' to set latest built image as source/currently running image.")
     print("Press any other key to keep old source file.")
     reply=input().lower().strip()
-
+    
     if(reply=="y"):
         print('Updating source.\n')
         copyfile(flashed_path,source_path)

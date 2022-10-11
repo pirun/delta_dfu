@@ -1,0 +1,12 @@
+#enable support application delta updates, added by Noy 2022-10-09
+config BOOT_NOY_DEFINE_DELTA
+	bool "App delta update support"
+	default n
+	depends on MCUBOOT
+	help
+	  Enable support for updates to the application firmware. 
+	  If y, images in the secondary slot can be smaller than a entire application image ,
+	  it's just a patch file only the parts of the firmware that have changed instead of the whole firmware.
+
+
+source "Kconfig.zephyr"

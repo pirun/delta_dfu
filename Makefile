@@ -2,7 +2,8 @@ BOARD := nrf52840dk_nrf52840
 PY := python 
 
 #device flash map
-SLOT_SIZE := 0xa0000
+SLOT0_SIZE := 0xa0000
+SLOT1_SIZE := 0x4c000
 HEADER_SIZE := 512
 SLOT0_OFFSET := 0x10000
 SLOT1_OFFSET := 0xb0000
@@ -26,8 +27,10 @@ TARGET_PATH := $(IMG_DIR)/target.bin
 PATCH_PATH := $(PATCH_DIR)/patch.bin
 SLOT0_PATH := $(DUMP_DIR)/slot0.bin
 SLOT1_PATH := $(DUMP_DIR)/slot1.bin
+PATCH_SLOT_PATH := $(DUMP_DIR)/patch.bin
 
 #commands + flags and scripts
+PYERASE := pyocd erase --sector 
 PYFLASH := pyocd flash -e sector 
 DETOOLS := detools create_patch --compression heatshrink
 BUILD_APP := west build -p auto -b $(BOARD) -d $(BUILD_DIR)
@@ -47,6 +50,7 @@ help:
 	@echo "build              Build the firmware image."		
 	@echo "build-boot         Build the bootloader."
 	@echo "flash-image        Flash the firmware image."
+	@echo "flash-target       Flash the delta-apply image."
 	@echo "flash-boot         Erase the flash and flash the bootloader."
 	@echo "flash-patch        Flash the patch to the storage partition."
 	@echo "create-patch       1. Create a patch based on the firmware"
@@ -70,11 +74,24 @@ build-boot:
 	mkdir -p $(BOOT_DIR)/build
 	cmake -B $(BOOT_DIR)/build -GNinja -DBOARD=$(BOARD) -S $(BOOT_DIR)
 	ninja -C $(BOOT_DIR)/build
+
+erase-slot1:
+	@echo "erase all the slot1 sector..."
+	$(PYERASE) $(SLOT1_OFFSET)+$(SLOT1_SIZE) -t nrf52840
 	
 flash-image:
 	@echo "Flashing latest source image to slot 0..."
-	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
+#	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
 	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SOURCE_PATH)
+
+flash-target:
+	@echo "Flashing latest source image to slot 0..."
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(TARGET_PATH)
+
+flash-slot1:
+	@echo "Flashing delta-apply image to slot 0..."
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SLOT1_PATH)
+
 
 flash-boot:
 	@echo "Flashing latest bootloader image..."	
@@ -83,7 +100,7 @@ flash-boot:
 flash-patch:
 	@echo "Flashing latest patch to patch partition..."
 	$(PYFLASH) -a $(PATCH_OFFSET) -t nrf52840 $(PATCH_PATH)
-	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
+#	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
 	
 create-patch:
 	@echo "Creating patch..."
@@ -96,21 +113,28 @@ connect:
 	@echo "Connecting to device console.."
 	JLinkRTTLogger -device NRF52 -if SWD -speed 5000 -rttchannel 0 /dev/stdout
 
-dump-flash: dump-slot0 dump-slot1
+dump-flash: dump-slot0 dump-slot1 dump-patch
 
 dump-slot0:
 	@echo "Dumping slot 0 contents.."
 	mkdir -p $(DUMP_DIR)
 	rm -f $(SLOT0_PATH)
 	touch $(SLOT0_PATH)
-	$(DUMP_SCRIPT) --start $(SLOT0_OFFSET) --length $(SLOT_SIZE) --file $(SLOT0_PATH)
+	$(DUMP_SCRIPT) --start $(SLOT0_OFFSET) --length $(SLOT0_SIZE) --file $(SLOT0_PATH)
 
 dump-slot1:
 	@echo "Dumping slot 1 contents.."
 	mkdir -p $(DUMP_DIR)
 	rm -f $(SLOT1_PATH)
 	touch $(SLOT1_PATH)
-	$(DUMP_SCRIPT) --start $(SLOT1_OFFSET) --length $(SLOT_SIZE) --file $(SLOT1_PATH)
+	$(DUMP_SCRIPT) --start $(SLOT1_OFFSET) --length $(SLOT1_SIZE) --file $(SLOT1_PATH)
+
+dump-patch:
+	@echo "Dumping patch contents.."
+	mkdir -p $(DUMP_DIR)
+	rm -f $(PATCH_SLOT_PATH)
+	touch $(PATCH_SLOT_PATH)
+	$(DUMP_SCRIPT) --start $(PATCH_OFFSET) --length $(MAX_PATCH_SIZE) --file $(PATCH_SLOT_PATH)
 
 clean:
 	rm -r -f $(BIN_DIR)

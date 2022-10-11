@@ -25,7 +25,9 @@
 			"vector": "c",
 			"memory_resource": "c",
 			"optional": "c",
-			"functional": "c"
+			"functional": "c",
+			"devicetree.h": "c",
+			"util_macro.h": "c"
 		}
 	}
 }

@@ -193,6 +193,7 @@ int delta_check_and_apply(struct flash_mem *flash)
 	printf("patch_size = %d\n", patch_size);
 #if 1
 	if (ret < 0) {
+		printf("ret=%d	read patch file error, exit delta update process!!!\n", ret);
 		return ret;
 	} else if (patch_size > 0) {
 		ret = delta_init(flash);
@@ -208,11 +209,14 @@ int delta_check_and_apply(struct flash_mem *flash)
 		if (ret <= 0) {
 			return ret;
 		}
-		if (boot_request_upgrade(BOOT_UPGRADE_PERMANENT)) {
-			return -1;
-		}
-		sys_reboot(SYS_REBOOT_COLD);
+		k_msleep(1000);		//for print debug message, added by Noy
+		/** below code should be effect when release, now just for test */
+		// if (boot_request_upgrade(BOOT_UPGRADE_PERMANENT)) {
+		// 	return -1;
+		// }
+		// sys_reboot(SYS_REBOOT_COLD);
 	}
+	
 #endif
 
 	return DELTA_OK;
@@ -234,12 +238,14 @@ int delta_read_patch_header(struct flash_mem *flash, uint32_t *size)
 		return -DELTA_PATCH_HEADER_ERROR;
 	}
 	printk("read_data[0]=%0X\t read_data[1]=%0X\r\n", patch_header[0], patch_header[1]);
+	
 	if (new_patch!=patch_header[0]) {
-		return DELTA_OK;
+		*size = 0;
+		return -DELTA_PATCH_HEADER_ERROR;
 	}
 
 	*size = patch_header[1];
-
+	/** just for test */
 	if (flash_write(flash->device, STORAGE_OFFSET, &reset_msg, sizeof(reset_msg))) {
 		return -DELTA_PATCH_HEADER_ERROR;
 	}

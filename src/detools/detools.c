@@ -781,7 +781,7 @@ int detools_apply_patch_process(struct detools_apply_patch_t *self_p,
 
 int detools_apply_patch_finalize(struct detools_apply_patch_t *self_p)
 {
-    int res;
+    int res, result;
 
     self_p->chunk.size = 0;
     self_p->chunk.offset = 0;
@@ -789,10 +789,13 @@ int detools_apply_patch_finalize(struct detools_apply_patch_t *self_p)
     do {
         res = apply_patch_process_once(self_p);
     } while (res == 0);
-
-    return (apply_patch_common_finalize(res,
+     printf("res=%d\t target_offset=%d\t target_size = %d\n",res, self_p->to_offset,self_p->to_size);
+    result = apply_patch_common_finalize(res,
                                         &self_p->patch_reader,
-                                        self_p->to_size));
+                                        self_p->to_size);
+
+    printf("Apply patch file reslt = %d\n", result);
+    return result;
 }
 
 /*

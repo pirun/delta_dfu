@@ -16,7 +16,10 @@
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"1.0.0"
+#define FW_VERSION		"1.2.0"
+
+//#define PRINT_ERRORS 	 1
+
 
 /*
  * Get button configuration from the devicetree sw0 alias. This is mandatory.
@@ -33,22 +36,27 @@
 static const struct gpio_dt_spec button = GPIO_DT_SPEC_GET_OR(SW0_NODE, gpios,{0});
 static struct gpio_callback button_cb_data;
 
+static bool btnPressFlag = false;
+
 /*
  * The led0 devicetree alias is optional. If present, we'll use it
  * to turn on the LED whenever the button is pressed.
  */
-static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led0), gpios,{0});
+static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led2), gpios,{0});
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
 	printk("Button pressed at %" PRIu32 "\n", k_cycle_get_32());
 	gpio_pin_toggle_dt(&led);
+	btnPressFlag = true;
 }
 
 void main(void)
 {
 	int ret;
 	struct flash_mem *flash_pt;
+
+	printk("Congratulations!! Delta DFU test successful!!!!!!\r\n");
 
 	if (!device_is_ready(button.port)) {
 		printk("Error: button device %s is not ready\n", button.port->name);
@@ -100,17 +108,22 @@ void main(void)
 	printk("Press the button\n");
 	if (led.port) {
 		while (1) {
-			int val = gpio_pin_get_dt(&button);
+			//int val = gpio_pin_get_dt(&button);
 			//gpio_pin_set_dt(&led, val);
-			if (val > 0) {
+			if (btnPressFlag) {
 				printk("start delta upgrade to version %s!!!please wait...... \r\n", FW_VERSION);
 				ret = delta_check_and_apply(flash_pt);
 				if (ret) {
 					#if PRINT_ERRORS == 1
 					printk("%s", delta_error_as_string(ret));
 					#endif
-					return;
+					//return;
 				}
+				// else
+				// {
+				// 	printk("Patch apply completed, you can check it in slot1!!!!!! \r\n");
+				// }
+				btnPressFlag = false;
 			}
 			//k_msleep(SLEEP_TIME_MS);
 		}
