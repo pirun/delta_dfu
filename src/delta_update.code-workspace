@@ -27,7 +27,8 @@
 			"optional": "c",
 			"functional": "c",
 			"devicetree.h": "c",
-			"util_macro.h": "c"
+			"util_macro.h": "c",
+			"gpio.h": "c"
 		}
 	}
 }

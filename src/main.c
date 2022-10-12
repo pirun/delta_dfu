@@ -16,7 +16,7 @@
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"1.1.0"
+#define FW_VERSION		"1.2.0"
 
 //#define PRINT_ERRORS 	 1
 
@@ -111,21 +111,20 @@ void main(void)
 			//int val = gpio_pin_get_dt(&button);
 			//gpio_pin_set_dt(&led, val);
 			if (btnPressFlag) {
-				printk("start delta upgrade to version %s!!!please wait...... \r\n", FW_VERSION);
-				ret = delta_check_and_apply(flash_pt);
-				if (ret) {
-					#if PRINT_ERRORS == 1
-					printk("%s", delta_error_as_string(ret));
-					#endif
-					//return;
-				}
-				// else
-				// {
-				// 	printk("Patch apply completed, you can check it in slot1!!!!!! \r\n");
+				printk("start delta upgrade to version %s!!!device will enter mcuboot, please wait...... \r\n", FW_VERSION);
+				// k_msleep(SLEEP_TIME_MS);
+				// sys_reboot(SYS_REBOOT_COLD);
+				// ret = delta_check_and_apply(flash_pt);
+				// if (ret) {
+				// 	#if PRINT_ERRORS == 1
+				// 	printk("%s", delta_error_as_string(ret));
+				// 	#endif
+				// 	//return;
 				// }
+		
 				btnPressFlag = false;
 			}
-			//k_msleep(SLEEP_TIME_MS);
+			//
 		}
 	}
 }

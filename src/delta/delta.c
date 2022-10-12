@@ -214,7 +214,7 @@ int delta_check_and_apply(struct flash_mem *flash)
 		// if (boot_request_upgrade(BOOT_UPGRADE_PERMANENT)) {
 		// return -1;
 		// }
-		sys_reboot(SYS_REBOOT_COLD);
+		// sys_reboot(SYS_REBOOT_COLD);
 	}
 	
 #endif
