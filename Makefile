@@ -76,6 +76,10 @@ build-boot:
 	cmake -B $(BOOT_DIR)/build -GNinja -DBOARD=$(BOARD) -S $(BOOT_DIR)
 	ninja -C $(BOOT_DIR)/build
 
+erase-slot0:
+	@echo "erase all the slot0 sector..."
+	$(PYERASE) $(SLOT0_OFFSET)+$(SLOT0_SIZE) -t nrf52840
+
 erase-slot1:
 	@echo "erase all the slot1 sector..."
 	$(PYERASE) $(SLOT1_OFFSET)+$(SLOT1_SIZE) -t nrf52840
@@ -88,6 +92,10 @@ flash-image:
 flash-target:
 	@echo "Flashing latest source image to slot 0..."
 	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(TARGET_PATH)
+
+flash-slot0:
+	@echo "Flashing delta-apply image to slot 0..."
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SLOT0_PATH)
 
 flash-slot1:
 	@echo "Flashing delta-apply image to slot 0..."

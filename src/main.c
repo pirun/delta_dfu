@@ -12,11 +12,11 @@
 #include <zephyr/sys/printk.h>
 #include <inttypes.h>
 #include <zephyr/dfu/mcuboot.h>
-#include "delta/delta.h"
+//#include "delta/delta.h"
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"1.2.0"
+#define FW_VERSION		"1.0.0"
 
 //#define PRINT_ERRORS 	 1
 
@@ -38,11 +38,22 @@ static struct gpio_callback button_cb_data;
 
 static bool btnPressFlag = false;
 
+struct flash_mem {
+	const struct device *device;
+	int patch_current;
+	int patch_end;
+	int from_current;
+	int from_end;
+	int to_current;
+	int to_end;
+	size_t write_buf;
+};
+
 /*
  * The led0 devicetree alias is optional. If present, we'll use it
  * to turn on the LED whenever the button is pressed.
  */
-static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led1), gpios,{0});
+static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led0), gpios,{0});
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
@@ -93,11 +104,11 @@ void main(void)
 		}
 	}
 
-	flash_pt = k_malloc(sizeof(struct flash_mem));
-	flash_pt->device = DEVICE_DT_GET(FLASH_NODEID);
-	if(!flash_pt->device) {
-		return;
-	}
+	// flash_pt = k_malloc(sizeof(struct flash_mem));
+	// flash_pt->device = DEVICE_DT_GET(FLASH_NODEID);
+	// if(!flash_pt->device) {
+	// 	return;
+	// }
 	// uint32_t patch_header[2];
 	// int rc = flash_read(flash_pt->device, STORAGE_OFFSET, patch_header, sizeof(patch_header));
 	// if(0 == rc)
