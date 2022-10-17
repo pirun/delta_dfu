@@ -29,6 +29,7 @@ REVERSE_PATCH_PATH := $(PATCH_DIR)/reverse_patch.bin
 SLOT0_PATH := $(DUMP_DIR)/slot0.bin
 SLOT1_PATH := $(DUMP_DIR)/slot1.bin
 PATCH_SLOT_PATH := $(DUMP_DIR)/patch.bin
+TARGET_APPLY_PATH := $(DUMP_DIR)/target.bin
 
 #commands + flags and scripts
 PYERASE := pyocd erase --sector 
@@ -50,8 +51,11 @@ help:
 	@echo "                   + flash firmware."
 	@echo "build              Build the firmware image."		
 	@echo "build-boot         Build the bootloader."
+	@echo "erase-slot1        erase flash slot1 partirion."
 	@echo "flash-image        Flash the firmware image."
 	@echo "flash-target       Flash the delta-apply image."
+	@echo "flash-slot1        Flash the slot1 image."
+	@echo "flash-apply-target       Flash the PC applied image."
 	@echo "flash-boot         Erase the flash and flash the bootloader."
 	@echo "flash-patch        Flash the patch to the storage partition."
 	@echo "create-patch       1. Create a patch based on the firmware"
@@ -101,6 +105,9 @@ flash-slot1:
 	@echo "Flashing delta-apply image to slot 0..."
 	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SLOT1_PATH)
 
+flash-apply-target:
+	@echo "Flashing PC delta-applied image to slot 0..."
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(TARGET_APPLY_PATH)
 
 flash-boot:
 	@echo "Flashing latest bootloader image..."	
@@ -117,6 +124,12 @@ create-patch:
 	rm -f $(PATCH_PATH)
 	$(DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)
 	$(PAD_SCRIPT) $(PATCH_PATH) $(MAX_PATCH_SIZE) $(PATCH_HEADER_SIZE)
+
+apply-patch:
+	@echo "Applying patch..."
+	mkdir -p $(PATCH_DIR)
+	rm -f $(TARGET_APPLY_PATH)
+	detools apply_patch $(SOURCE_PATH) $(PATCH_PATH) $(TARGET_APPLY_PATH)
 
 create-reverse-patch:
 	@echo "Creating reverse patch..."

@@ -16,7 +16,7 @@
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"1.0.0"
+#define FW_VERSION		"2.0.0"
 
 //#define PRINT_ERRORS 	 1
 
@@ -53,7 +53,7 @@ struct flash_mem {
  * The led0 devicetree alias is optional. If present, we'll use it
  * to turn on the LED whenever the button is pressed.
  */
-static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led0), gpios,{0});
+static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led3), gpios,{0});
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
