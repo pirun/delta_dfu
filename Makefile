@@ -2,14 +2,23 @@ BOARD := nrf52840dk_nrf52840
 PY := python 
 
 #device flash map
+#SLOT0_SIZE := 0xa0000
+#SLOT1_SIZE := 0x4c000
+#HEADER_SIZE := 512
+#SLOT0_OFFSET := 0x10000
+#SLOT1_OFFSET := 0xb0000
+#PATCH_OFFSET := 0xfc000
+#MAX_PATCH_SIZE := 0x4000
+#PATCH_HEADER_SIZE := 0x8 
+
 SLOT0_SIZE := 0xa0000
-SLOT1_SIZE := 0x4c000
+SLOT1_SIZE := 0x30000
 HEADER_SIZE := 512
 SLOT0_OFFSET := 0x10000
 SLOT1_OFFSET := 0xb0000
-PATCH_OFFSET := 0xfc000
-MAX_PATCH_SIZE := 0x4000
-PATCH_HEADER_SIZE := 0x8 
+PATCH_OFFSET := 0xe0000
+MAX_PATCH_SIZE := 0x1c000
+PATCH_HEADER_SIZE := 0x8
 
 #relevant directories that the user might have to update
 BOOT_DIR := bootloader/mcuboot/boot/zephyr#bootloader image location
@@ -62,6 +71,7 @@ help:
 	@echo "                     image and the upgraded firmware image."
 	@echo "                   2. Append NEWPATCH and patch size to"
 	@echo "                     the beginning of the image."
+	@echo "apply-patch        Applying patch to generate new image and save to binaries/flash_dumps/target.bin."
 	@echo "connect            Connect to the device terminal."
 	@echo "dump-flash         Dump slot 1 and 0 to files."
 	@echo "clean              Remove all generated binaries."

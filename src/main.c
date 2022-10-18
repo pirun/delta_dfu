@@ -16,7 +16,7 @@
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"2.0.0"
+#define FW_VERSION		"2.1.0"
 
 //#define PRINT_ERRORS 	 1
 
@@ -38,22 +38,22 @@ static struct gpio_callback button_cb_data;
 
 static bool btnPressFlag = false;
 
-struct flash_mem {
-	const struct device *device;
-	int patch_current;
-	int patch_end;
-	int from_current;
-	int from_end;
-	int to_current;
-	int to_end;
-	size_t write_buf;
-};
+// struct flash_mem {
+// 	const struct device *device;
+// 	int patch_current;
+// 	int patch_end;
+// 	int from_current;
+// 	int from_end;
+// 	int to_current;
+// 	int to_end;
+// 	size_t write_buf;
+// };
 
 /*
  * The led0 devicetree alias is optional. If present, we'll use it
  * to turn on the LED whenever the button is pressed.
  */
-static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led3), gpios,{0});
+static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led2), gpios,{0});
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
@@ -65,7 +65,7 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t
 void main(void)
 {
 	int ret;
-	struct flash_mem *flash_pt;
+	//struct flash_mem *flash_pt;
 
 	printk("Congratulations!! Delta DFU test successful!!!!!!\r\n");
 
@@ -135,7 +135,6 @@ void main(void)
 		
 				btnPressFlag = false;
 			}
-			//
 		}
 	}
 }
