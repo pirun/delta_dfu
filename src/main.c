@@ -12,13 +12,12 @@
 #include <zephyr/sys/printk.h>
 #include <inttypes.h>
 #include <zephyr/dfu/mcuboot.h>
-//#include "delta/delta.h"
+
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"2.1.0"
+#define FW_VERSION		"2.0.0"
 
-//#define PRINT_ERRORS 	 1
 
 
 /*
@@ -38,17 +37,6 @@ static struct gpio_callback button_cb_data;
 
 static bool btnPressFlag = false;
 
-// struct flash_mem {
-// 	const struct device *device;
-// 	int patch_current;
-// 	int patch_end;
-// 	int from_current;
-// 	int from_end;
-// 	int to_current;
-// 	int to_end;
-// 	size_t write_buf;
-// };
-
 /*
  * The led0 devicetree alias is optional. If present, we'll use it
  * to turn on the LED whenever the button is pressed.
@@ -65,9 +53,8 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t
 void main(void)
 {
 	int ret;
-	//struct flash_mem *flash_pt;
 
-	printk("Congratulations!! Delta DFU test successful!!!!!!\r\n");
+	//printk("Congratulations!! Delta DFU test successful!!!!!!\r\n");
 
 	if (!device_is_ready(button.port)) {
 		printk("Error: button device %s is not ready\n", button.port->name);
@@ -104,35 +91,12 @@ void main(void)
 		}
 	}
 
-	// flash_pt = k_malloc(sizeof(struct flash_mem));
-	// flash_pt->device = DEVICE_DT_GET(FLASH_NODEID);
-	// if(!flash_pt->device) {
-	// 	return;
-	// }
-	// uint32_t patch_header[2];
-	// int rc = flash_read(flash_pt->device, STORAGE_OFFSET, patch_header, sizeof(patch_header));
-	// if(0 == rc)
-	// {
-	// 	printk("Flash read success!!!\r\n");
-	// }
 
 	printk("Press the button\n");
 	if (led.port) {
 		while (1) {
-			//int val = gpio_pin_get_dt(&button);
-			//gpio_pin_set_dt(&led, val);
 			if (btnPressFlag) {
 				printk("start delta upgrade to version %s!!!device will enter mcuboot, please wait...... \r\n", FW_VERSION);
-				// k_msleep(SLEEP_TIME_MS);
-				// sys_reboot(SYS_REBOOT_COLD);
-				// ret = delta_check_and_apply(flash_pt);
-				// if (ret) {
-				// 	#if PRINT_ERRORS == 1
-				// 	printk("%s", delta_error_as_string(ret));
-				// 	#endif
-				// 	//return;
-				// }
-		
 				btnPressFlag = false;
 			}
 		}

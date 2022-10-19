@@ -2,23 +2,14 @@ BOARD := nrf52840dk_nrf52840
 PY := python 
 
 #device flash map
-#SLOT0_SIZE := 0xa0000
-#SLOT1_SIZE := 0x4c000
-#HEADER_SIZE := 512
-#SLOT0_OFFSET := 0x10000
-#SLOT1_OFFSET := 0xb0000
-#PATCH_OFFSET := 0xfc000
-#MAX_PATCH_SIZE := 0x4000
-#PATCH_HEADER_SIZE := 0x8 
-
 SLOT0_SIZE := 0xa0000
-SLOT1_SIZE := 0x30000
+SLOT1_SIZE := 0x4c000
 HEADER_SIZE := 512
 SLOT0_OFFSET := 0x10000
 SLOT1_OFFSET := 0xb0000
-PATCH_OFFSET := 0xe0000
-MAX_PATCH_SIZE := 0x1c000
-PATCH_HEADER_SIZE := 0x8
+PATCH_OFFSET := $(SLOT1_OFFSET)
+MAX_PATCH_SIZE := $(SLOT1_SIZE)
+PATCH_HEADER_SIZE := 0x8 
 
 #relevant directories that the user might have to update
 BOOT_DIR := bootloader/mcuboot/boot/zephyr#bootloader image location
@@ -100,7 +91,6 @@ erase-slot1:
 	
 flash-image:
 	@echo "Flashing latest source image to slot 0..."
-#	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
 	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SOURCE_PATH)
 
 flash-target:
