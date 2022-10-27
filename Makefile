@@ -34,6 +34,7 @@ DUMP_DIR := $(BIN_DIR)/flash_dumps
 SOURCE_PATH := $(IMG_DIR)/source.bin
 TARGET_PATH := $(IMG_DIR)/target.bin
 PATCH_PATH := $(PATCH_DIR)/patch.bin
+ORIGIN_PATCH_PATH := $(PATCH_DIR)/patch_original.bin
 REVERSE_PATCH_PATH := $(PATCH_DIR)/reverse_patch.bin
 SLOT0_PATH := $(DUMP_DIR)/slot0.bin
 SLOT1_PATH := $(DUMP_DIR)/slot1.bin
@@ -134,14 +135,18 @@ create-patch:
 	mkdir -p $(PATCH_DIR)
 	rm -f $(PATCH_PATH)
 	$(DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)
+	cp $(PATCH_PATH) $(ORIGIN_PATCH_PATH)
 	$(PAD_SCRIPT) $(PATCH_PATH) $(MAX_PATCH_SIZE) $(PATCH_HEADER_SIZE)
 #	$(IN_PLACE_DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)		//test in-place patch 
+
+patch-info:
+	detools patch_info $(ORIGIN_PATCH_PATH) 
 
 apply-patch:
 	@echo "Applying patch..."
 	mkdir -p $(PATCH_DIR)
 	rm -f $(TARGET_APPLY_PATH)
-	detools apply_patch $(SOURCE_PATH) $(PATCH_PATH) $(TARGET_APPLY_PATH)
+	detools apply_patch $(SOURCE_PATH) $(ORIGIN_PATCH_PATH) $(TARGET_APPLY_PATH)
 
 create-reverse-patch:
 	@echo "Creating reverse patch..."
