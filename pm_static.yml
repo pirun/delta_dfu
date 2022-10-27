@@ -51,7 +51,7 @@ mcuboot_primary_app:
   span: *id002
 mcuboot_secondary:
   address: 0xb0000
-  end_address: 0xe0000
+  end_address: 0x100000
   placement:
     after:
     - mcuboot_primary
@@ -61,12 +61,12 @@ mcuboot_secondary:
   region: flash_primary
   share_size:
   - mcuboot_primary
-  size: 0x30000
-patch_storage:
-  address: 0xe0000
-  end_address: 0x100000
-  region: flash_primary
-  size: 0x20000
+  size: 0x50000
+#patch_storage:
+#  address: 0xe0000
+#  end_address: 0x100000
+#  region: flash_primary
+#  size: 0x20000
 nrf_modem_lib_ctrl:
   address: 0x20008000
   end_address: 0x200084e8

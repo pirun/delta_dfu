@@ -2,23 +2,23 @@ BOARD := nrf9160dk_nrf9160ns
 PY := python 
 
 #device flash map
-#SLOT0_SIZE := 0xa0000
-#SLOT1_SIZE := 0x4c000
-#HEADER_SIZE := 512
-#SLOT0_OFFSET := 0x10000
-#SLOT1_OFFSET := 0xb0000
-#PATCH_OFFSET := 0xfc000
-#MAX_PATCH_SIZE := 0x4000
-#PATCH_HEADER_SIZE := 0x8 
-
 SLOT0_SIZE := 0xa0000
-SLOT1_SIZE := 0x30000
+SLOT1_SIZE := 0x50000
 HEADER_SIZE := 512
 SLOT0_OFFSET := 0x10000
 SLOT1_OFFSET := 0xb0000
-PATCH_OFFSET := 0xe0000
-MAX_PATCH_SIZE := 0x20000
-PATCH_HEADER_SIZE := 0x8
+PATCH_OFFSET := $(SLOT1_OFFSET)
+MAX_PATCH_SIZE := $(SLOT1_SIZE)
+PATCH_HEADER_SIZE := 0x8 
+
+#SLOT0_SIZE := 0xa0000
+#SLOT1_SIZE := 0x30000
+#HEADER_SIZE := 512
+#SLOT0_OFFSET := 0x10000
+#SLOT1_OFFSET := 0xb0000
+#PATCH_OFFSET := 0xe0000
+#MAX_PATCH_SIZE := 0x20000
+#PATCH_HEADER_SIZE := 0x8
 
 #relevant directories that the user might have to update
 BOOT_DIR := bootloader/mcuboot/boot/zephyr#bootloader image location
@@ -44,6 +44,7 @@ TARGET_APPLY_PATH := $(DUMP_DIR)/target.bin
 PYERASE := pyocd erase --sector 
 PYFLASH := pyocd flash -e sector 
 DETOOLS := detools create_patch --compression heatshrink
+IN_PLACE_DETOOLS := detools create_patch_in_place --memory-size 3000 --segment-size 500 --compression heatshrink
 BUILD_APP := west build -p auto -b $(BOARD) -d $(BUILD_DIR)
 SIGN := west sign -t imgtool -d $(BUILD_DIR)
 IMGTOOL_SETTINGS := --version 1.0 --header-size $(HEADER_SIZE) \
@@ -134,6 +135,7 @@ create-patch:
 	rm -f $(PATCH_PATH)
 	$(DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)
 	$(PAD_SCRIPT) $(PATCH_PATH) $(MAX_PATCH_SIZE) $(PATCH_HEADER_SIZE)
+#	$(IN_PLACE_DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)		//test in-place patch 
 
 apply-patch:
 	@echo "Applying patch..."
