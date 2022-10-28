@@ -23,7 +23,7 @@ PATCH_HEADER_SIZE := 0x8
 #relevant directories that the user might have to update
 BOOT_DIR := bootloader/mcuboot/boot/zephyr#bootloader image location
 BUILD_DIR := zephyr/build#zephyr build directory
-KEY_PATH := bootloader/mcuboot/root-rsa-2048.pem#key for signing images
+KEY_PATH := C:/NCS_SDK/v2.1.0/bootloader/mcuboot/root-ec-p256.pem#key for signing images
 
 #Names of generated folders and files (can be changed to whatever)
 BIN_DIR := binaries
@@ -34,6 +34,7 @@ DUMP_DIR := $(BIN_DIR)/flash_dumps
 SOURCE_PATH := $(IMG_DIR)/source.bin
 TARGET_PATH := $(IMG_DIR)/target.bin
 PATCH_PATH := $(PATCH_DIR)/patch.bin
+SIGN_PATCH_PATH := $(PATCH_DIR)/signed_patch.bin
 ORIGIN_PATCH_PATH := $(PATCH_DIR)/patch_original.bin
 REVERSE_PATCH_PATH := $(PATCH_DIR)/reverse_patch.bin
 SLOT0_PATH := $(DUMP_DIR)/slot0.bin
@@ -45,14 +46,16 @@ TARGET_APPLY_PATH := $(DUMP_DIR)/target.bin
 PYERASE := pyocd erase --sector 
 PYFLASH := pyocd flash -e sector 
 DETOOLS := detools create_patch --compression heatshrink
+SIGN := sign --key $(KEY_PATH) --header-size 0x200 --align 4 --version 0.0.0+0 --pad-header --slot-size 0xa0000
 IN_PLACE_DETOOLS := detools create_patch_in_place --memory-size 3000 --segment-size 500 --compression heatshrink
 BUILD_APP := west build -p auto -b $(BOARD) -d $(BUILD_DIR)
-SIGN := west sign -t imgtool -d $(BUILD_DIR)
+#SIGN := west sign -t imgtool -d $(BUILD_DIR)
 IMGTOOL_SETTINGS := --version 1.0 --header-size $(HEADER_SIZE) \
                     --slot-size $(SLOT_SIZE) --align 4 --key $(KEY_PATH)
 PAD_SCRIPT := $(PY) scripts/pad_patch.py
 DUMP_SCRIPT := $(PY) scripts/jflashrw.py read
 SET_SCRIPT := $(PY) scripts/set_current.py 
+SIGN_PATCH := $(PY) C:/NCS_SDK/v2.1.0/bootloader/mcuboot/scripts/imgtool.py 
 
 all: build-boot flash-boot build flash-image
 
@@ -127,7 +130,7 @@ flash-boot:
 
 flash-patch:
 	@echo "Flashing latest patch to patch partition..."
-	$(PYFLASH) -a $(PATCH_OFFSET) -t nrf9160_xxaa $(PATCH_PATH)
+	$(PYFLASH) -a $(PATCH_OFFSET) -t nrf9160_xxaa $(SIGN_PATCH_PATH)
 	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
 	
 create-patch:
@@ -138,6 +141,14 @@ create-patch:
 	cp $(PATCH_PATH) $(ORIGIN_PATCH_PATH)
 	$(PAD_SCRIPT) $(PATCH_PATH) $(MAX_PATCH_SIZE) $(PATCH_HEADER_SIZE)
 #	$(IN_PLACE_DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)		//test in-place patch 
+	rm -f $(SIGN_PATCH_PATH)			
+	$(SIGN_PATCH) $(SIGN) $(PATCH_PATH) $(SIGN_PATCH_PATH)		
+
+sign-patch:
+	@echo "Signing the patch file..."
+	mkdir -p $(PATCH_DIR)
+	rm -f $(SIGN_PATCH_PATH)
+	$(SIGN_PATCH) $(SIGN) $(PATCH_PATH) $(SIGN_PATCH_PATH)
 
 patch-info:
 	detools patch_info $(ORIGIN_PATCH_PATH) 

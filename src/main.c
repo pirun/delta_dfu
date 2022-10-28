@@ -16,7 +16,7 @@
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"2.0.0"
+#define FW_VERSION		"3.0.0"
 
 
 /*
@@ -34,19 +34,19 @@
 static const struct gpio_dt_spec button = GPIO_DT_SPEC_GET_OR(SW0_NODE, gpios,{0});
 static struct gpio_callback button_cb_data;
 
-static bool btnPressFlag = false;
+volatile bool btnFlag = false;
 
 /*
  * The led0 devicetree alias is optional. If present, we'll use it
  * to turn on the LED whenever the button is pressed.
  */
-static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led2), gpios,{0});
+static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led3), gpios,{0});
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
+	btnFlag = true;
 	printk("Version:%s	Button pressed at %" PRIu32 "\n", FW_VERSION,k_cycle_get_32());
 	gpio_pin_toggle_dt(&led);
-	btnPressFlag = true;
 }
 
 void main(void)
@@ -92,12 +92,19 @@ void main(void)
 
 
 	printk("Press the button\n");
-	if (led.port) {
-		while (1) {
-			if (btnPressFlag) {
-				printk("start delta upgrade to version %s!!!device will enter mcuboot, please wait...... \r\n", FW_VERSION);	
-				btnPressFlag = false;
+	while (1) 
+	{
+		//printk("btnPressFlag = %d\r\n",btnFlag);
+		if (btnFlag) 
+		{
+			printk("start delta upgrade to version %s!!!device will enter mcuboot, please wait...... \r\n", FW_VERSION);
+			if (boot_request_upgrade(BOOT_UPGRADE_PERMANENT)) 
+			{
+				printk("flash image_ok flag failed!!!\r\n");
 			}
+	
+			btnFlag = false;
 		}
+		//k_msleep(SLEEP_TIME_MS);
 	}
 }
