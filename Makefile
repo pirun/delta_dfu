@@ -35,10 +35,12 @@ SOURCE_PATH := $(IMG_DIR)/source.bin
 TARGET_PATH := $(IMG_DIR)/target.bin
 PATCH_PATH := $(PATCH_DIR)/patch.bin
 SIGN_PATCH_PATH := $(PATCH_DIR)/signed_patch.bin
+#SIGN_PATCH_PATH := $(PATCH_DIR)/signed_patch_from_1.1.5_to_3.1.0.bin
 ORIGIN_PATCH_PATH := $(PATCH_DIR)/patch_original.bin
 REVERSE_PATCH_PATH := $(PATCH_DIR)/reverse_patch.bin
 SLOT0_PATH := $(DUMP_DIR)/slot0.bin
 SLOT1_PATH := $(DUMP_DIR)/slot1.bin
+SIGN_SOURCE_PATH := $(DUMP_DIR)/signed_source.bin
 PATCH_SLOT_PATH := $(DUMP_DIR)/patch.bin
 TARGET_APPLY_PATH := $(DUMP_DIR)/target.bin
 
@@ -49,7 +51,6 @@ DETOOLS := detools create_patch --compression heatshrink
 SIGN := sign --key $(KEY_PATH) --header-size 0x200 --align 4 --version 0.0.0+0 --pad-header --slot-size 0xa0000
 IN_PLACE_DETOOLS := detools create_patch_in_place --memory-size 3000 --segment-size 500 --compression heatshrink
 BUILD_APP := west build -p auto -b $(BOARD) -d $(BUILD_DIR)
-#SIGN := west sign -t imgtool -d $(BUILD_DIR)
 IMGTOOL_SETTINGS := --version 1.0 --header-size $(HEADER_SIZE) \
                     --slot-size $(SLOT_SIZE) --align 4 --key $(KEY_PATH)
 PAD_SCRIPT := $(PY) scripts/pad_patch.py
@@ -144,11 +145,10 @@ create-patch:
 	rm -f $(SIGN_PATCH_PATH)			
 	$(SIGN_PATCH) $(SIGN) $(PATCH_PATH) $(SIGN_PATCH_PATH)		
 
-sign-patch:
-	@echo "Signing the patch file..."
-	mkdir -p $(PATCH_DIR)
+sign-source:
+	@echo "Signing the source file..."
 	rm -f $(SIGN_PATCH_PATH)
-	$(SIGN_PATCH) $(SIGN) $(PATCH_PATH) $(SIGN_PATCH_PATH)
+	$(SIGN_PATCH) $(SIGN) $(SOURCE_PATH) $(SIGN_SOURCE_PATH)
 
 patch-info:
 	detools patch_info $(ORIGIN_PATCH_PATH) 

@@ -4,6 +4,8 @@ import sys
 def padded_hex(s,p):
     return '0x' + s[2:].zfill(p)
 
+
+
 def start(path,max_size,input_header_size):
     header_size = max(input_header_size,8)
     size=os.stat(path).st_size 
