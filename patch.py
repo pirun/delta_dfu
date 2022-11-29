@@ -1,8 +1,12 @@
 import os
 import sys
+from shutil import copyfile
+from sys import exit
 
 paths = "binaries/signed_images"
+sign_patch = "binaries/patches/signed_patch.bin"
 patch_path = "binaries/patches/patch"
+source_path = ''
 #command = "detools create_patch --compression heatshrink binaries/signed_images/source.bin binaries/signed_images/target.bin binaries/patches/patch1.bin"
 command = "detools create_patch --compression heatshrink "
 source_version = ''
@@ -14,6 +18,7 @@ def padded_hex(s,p):
 def create_patch_file(path):
     global command
     global patch_path
+    global source_path
     global source_version
     global target_version
     source_count = 0
@@ -28,8 +33,10 @@ def create_patch_file(path):
            
     if(source_count != 1):
         print("Multiple source files:%d!!!\r\n" %source_count)
+        exit(1)
     if(target_count != 1):
         print("Multiple target files:%d!!!\r\n" %target_count)
+        exit(1)
 
     for file_name in files:
         if "source_" in file_name:
@@ -43,28 +50,50 @@ def create_patch_file(path):
 
     patch_path += "_from_" + source_version + "_to_" + target_version + ".bin"
     command += source_path + ' ' + target_path + ' ' + patch_path
-    print(patch_path)
+    print(command)
     os.system(command)
 
 
 
 def sign_patch_file(sign_path):
-    print("patch_path:%s" %patch_path)
+    print("source_path:%s" %source_path)
     size=os.stat(patch_path).st_size 
     f=open(patch_path,'r+b')
     contents = f.read()
     f.seek(0)
     f.write('NEWP'.encode()) 
     f.write(size.to_bytes(4,byteorder='little'))
-    f.write(source_version.encode())
-    #f.write(target_version.encode())
+    # write source hash value to patch file
+    with open(source_path,"rb") as file_obj:
+        file_obj.seek(12)
+        value = file_obj.read(4)
+        offset = int.from_bytes(value,byteorder='little')
+        print("offset = 0X%08x\n" %(offset))
+        file_obj.seek(offset + 0x200 + 0x08)
+        source_hash = file_obj.read(0x20)
+        #print(source_hash)
+        f.write(source_hash)
+    # write file contents to new file
     f.write(contents)
 
+    # excute signature command 
     with open(sign_path,encoding='utf-8') as file_obj:
         text = file_obj.read()
         sign_command = text.strip('\r\n') + ' ' + patch_path + ' ' + patch_path.replace("patch_from","signed_patch_from")
         print(sign_command)
         os.system(sign_command)
+
+        # copy and rename the signed patch file , which will be used by make flash-patch command
+    try:
+        copyfile(patch_path.replace("patch_from","signed_patch_from"), sign_patch)
+    except IOError as e:
+        print("Unable to copy file. %s" % e)
+        exit(1)
+    except:
+        print("Unexpected error:", sys.exc_info())
+        exit(1)
+
+    print("\nFile copy done!\n")
 
 
 '''
@@ -87,5 +116,5 @@ def start(path,max_size,input_header_size):
 if __name__ == "__main__":
     create_patch_file(paths)
     sign_patch_file("scripts/signature.py")
-    
+
     #start(sys.argv[1],int(sys.argv[2],0),int(sys.argv[3],0))
