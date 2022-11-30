@@ -16,7 +16,7 @@
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"1.1.6"
+#define FW_VERSION		"1.1.9"
 
 
 /*
