@@ -31,7 +31,7 @@ IMG_DIR := $(BIN_DIR)/signed_images
 PATCH_DIR := $(BIN_DIR)/patches
 DUMP_DIR := $(BIN_DIR)/flash_dumps
 
-SOURCE_PATH := $(IMG_DIR)/source_1.1.5.bin
+SOURCE_PATH := $(IMG_DIR)/source_1.1.9.bin
 TARGET_PATH := $(IMG_DIR)/target.bin
 PATCH_PATH := $(PATCH_DIR)/patch.bin
 SIGN_PATCH_PATH := $(PATCH_DIR)/signed_patch.bin

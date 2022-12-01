@@ -42,21 +42,21 @@ def create_patch_file(path):
         if "source_" in file_name:
             source_path = os.path.normpath(os.path.join(path, file_name))
             source_version = file_name.split("_")[1].split(".bin")[0]
-            print("source file:%s  source_version:%s  source_path:%s"  %(file_name,source_version,source_path))
+            # print("source file:%s  source_version:%s  source_path:%s"  %(file_name,source_version,source_path))
         elif "target_" in file_name:
             target_path = os.path.normpath(os.path.join(path, file_name))
             target_version = file_name.split("_")[1].split(".bin")[0]
-            print("target file:%s  target_version:%s  target_path:%s"  %(file_name,target_version,target_path))
+            # print("target file:%s  target_version:%s  target_path:%s"  %(file_name,target_version,target_path))
 
     patch_path += "_from_" + source_version + "_to_" + target_version + ".bin"
     command += source_path + ' ' + target_path + ' ' + patch_path
-    print(command)
+    # print(command)
     os.system(command)
 
 
 
 def sign_patch_file(sign_path):
-    print("source_path:%s" %source_path)
+    # print("source_path:%s" %source_path)
     size=os.stat(patch_path).st_size 
     f=open(patch_path,'r+b')
     contents = f.read()
@@ -68,7 +68,7 @@ def sign_patch_file(sign_path):
         file_obj.seek(12)
         value = file_obj.read(4)
         offset = int.from_bytes(value,byteorder='little')
-        print("offset = 0X%08x\n" %(offset))
+        print("file_size = 0X%08x\n" %(offset))
         file_obj.seek(offset + 0x200 + 0x08)
         source_hash = file_obj.read(0x20)
         #print(source_hash)
@@ -95,26 +95,7 @@ def sign_patch_file(sign_path):
 
     print("\nFile copy done!\n")
 
-
-'''
-def start(path,max_size,input_header_size):
-    header_size = max(input_header_size,8)
-    size=os.stat(path).st_size 
-    f=open(path,'r+b')
-    contents = f.read()
-    f.seek(0)
-    f.write('NEWP'.encode()) 
-    f.write(size.to_bytes(header_size-4,byteorder='little'))
-    f.write(contents)
-
-    print("Patch size: " + hex(size) + " + " + hex(header_size) + " (header)")
-
-    if((max_size-header_size)<size):
-        print("WARNING: Patch too large for patch partition!")
-'''
-
 if __name__ == "__main__":
     create_patch_file(paths)
     sign_patch_file("scripts/signature.py")
-
-    #start(sys.argv[1],int(sys.argv[2],0),int(sys.argv[3],0))
+    os.system("pause")
