@@ -22,36 +22,45 @@ def create_patch_file(path):
     global source_version
     global target_version
     source_count = 0
-    target_count = 0
-    files = os.listdir(path)
-    for file_name in files:
-        #print("file_name="+file_name)
-        if "source_" in file_name:
-            source_count += 1
-        elif "target_" in file_name:
-            target_count += 1
-           
-    if(source_count != 1):
-        print("Multiple source files:%d!!!\r\n" %source_count)
-        exit(1)
-    if(target_count != 1):
-        print("Multiple target files:%d!!!\r\n" %target_count)
-        exit(1)
+    target_count = 0.
 
-    for file_name in files:
-        if "source_" in file_name:
-            source_path = os.path.normpath(os.path.join(path, file_name))
-            source_version = file_name.split("_")[1].split(".bin")[0]
-            # print("source file:%s  source_version:%s  source_path:%s"  %(file_name,source_version,source_path))
-        elif "target_" in file_name:
-            target_path = os.path.normpath(os.path.join(path, file_name))
-            target_version = file_name.split("_")[1].split(".bin")[0]
-            # print("target file:%s  target_version:%s  target_path:%s"  %(file_name,target_version,target_path))
+    try:
+        files = os.listdir(path)
+        for file_name in files:
+            #print("file_name="+file_name)
+            if "source_" in file_name:
+                source_count += 1
+            elif "target_" in file_name:
+                target_count += 1
+    except:
+        print("file path : [\"%s\"] error!\r\n" %(path))
+        os.system("pause")
+    else:      
+        if(source_count != 1):
+            print("Multiple source files:%d!!!\r\n" %source_count)
+            os.system("pause")
+        if(target_count != 1):
+            print("Multiple target files:%d!!!\r\n" %target_count)
+            os.system("pause")
 
-    patch_path += "_from_" + source_version + "_to_" + target_version + ".bin"
-    command += source_path + ' ' + target_path + ' ' + patch_path
-    # print(command)
-    os.system(command)
+        for file_name in files:
+            if "source_" in file_name:
+                source_path = os.path.normpath(os.path.join(path, file_name))
+                source_version = file_name.split("_")[1].split(".bin")[0]
+                # print("source file:%s  source_version:%s  source_path:%s"  %(file_name,source_version,source_path))
+            elif "target_" in file_name:
+                target_path = os.path.normpath(os.path.join(path, file_name))
+                target_version = file_name.split("_")[1].split(".bin")[0]
+                # print("target file:%s  target_version:%s  target_path:%s"  %(file_name,target_version,target_path))
+
+        patch_path += "_from_" + source_version + "_to_" + target_version + ".bin"
+        command += source_path + ' ' + target_path + ' ' + patch_path
+        # print(command)
+        try:
+            os.system(command)
+        except:
+            print("Please install detools first. [\"pip3 install --user detools\"]\r\n")
+            os.system("pause")
 
 
 
@@ -77,21 +86,20 @@ def sign_patch_file(sign_path):
     f.write(contents)
 
     # excute signature command 
-    with open(sign_path,encoding='utf-8') as file_obj:
-        text = file_obj.read()
-        sign_command = text.strip('\r\n') + ' ' + patch_path + ' ' + patch_path.replace("patch_from","signed_patch_from")
-        print(sign_command)
-        os.system(sign_command)
-
-        # copy and rename the signed patch file , which will be used by make flash-patch command
     try:
-        copyfile(patch_path.replace("patch_from","signed_patch_from"), sign_patch)
-    except IOError as e:
-        print("Unable to copy file. %s" % e)
-        exit(1)
+        with open(sign_path,encoding='utf-8') as file_obj:
+            text = file_obj.read()
+            sign_command = text.strip('\r\n') + ' ' + patch_path + ' ' + patch_path.replace("patch_from","signed_patch_from")
+            # print(sign_command)
+            os.system(sign_command)
     except:
-        print("Unexpected error:", sys.exc_info())
-        exit(1)
+        print("Please check your imgtool command: [\"%s\"]!!!\r\n" %sign_command)
+        os.system("pause")
+    else:
+        # copy and rename the signed patch file , which will be used by make flash-patch command
+        copyfile(patch_path.replace("patch_from","signed_patch_from"), sign_patch)
+
+
 
     print("\nFile copy done!\n")
 
