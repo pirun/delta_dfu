@@ -1,9 +1,9 @@
-BOARD := nrf9160dk_nrf9160ns
+BOARD := nrf52840dk_nrf52840
 PY := python 
 
 #device flash map
 SLOT0_SIZE := 0xa0000
-SLOT1_SIZE := 0x50000
+SLOT1_SIZE := 0x4c000
 HEADER_SIZE := 512
 SLOT0_OFFSET := 0x10000
 SLOT1_OFFSET := 0xb0000
@@ -11,35 +11,24 @@ PATCH_OFFSET := $(SLOT1_OFFSET)
 MAX_PATCH_SIZE := $(SLOT1_SIZE)
 PATCH_HEADER_SIZE := 0x8 
 
-#SLOT0_SIZE := 0xa0000
-#SLOT1_SIZE := 0x30000
-#HEADER_SIZE := 512
-#SLOT0_OFFSET := 0x10000
-#SLOT1_OFFSET := 0xb0000
-#PATCH_OFFSET := 0xe0000
-#MAX_PATCH_SIZE := 0x20000
-#PATCH_HEADER_SIZE := 0x8
-
 #relevant directories that the user might have to update
 BOOT_DIR := bootloader/mcuboot/boot/zephyr#bootloader image location
 BUILD_DIR := zephyr/build#zephyr build directory
-KEY_PATH := C:/NCS_SDK/v2.1.0/bootloader/mcuboot/root-ec-p256.pem#key for signing images
+KEY_PATH := bootloader/mcuboot/root-rsa-2048.pem#key for signing images
 
 #Names of generated folders and files (can be changed to whatever)
 BIN_DIR := binaries
 IMG_DIR := $(BIN_DIR)/signed_images
 PATCH_DIR := $(BIN_DIR)/patches
 DUMP_DIR := $(BIN_DIR)/flash_dumps
+
 SOURCE_PATH := $(IMG_DIR)/source.bin
 TARGET_PATH := $(IMG_DIR)/target.bin
 PATCH_PATH := $(PATCH_DIR)/patch.bin
 SIGN_PATCH_PATH := $(PATCH_DIR)/signed_patch.bin
-#SIGN_PATCH_PATH := $(PATCH_DIR)/signed_patch_from_1.1.5_to_3.1.0.bin
-ORIGIN_PATCH_PATH := $(PATCH_DIR)/patch_original.bin
 REVERSE_PATCH_PATH := $(PATCH_DIR)/reverse_patch.bin
 SLOT0_PATH := $(DUMP_DIR)/slot0.bin
 SLOT1_PATH := $(DUMP_DIR)/slot1.bin
-SIGN_SOURCE_PATH := $(DUMP_DIR)/signed_source.bin
 PATCH_SLOT_PATH := $(DUMP_DIR)/patch.bin
 TARGET_APPLY_PATH := $(DUMP_DIR)/target.bin
 
@@ -47,15 +36,13 @@ TARGET_APPLY_PATH := $(DUMP_DIR)/target.bin
 PYERASE := pyocd erase --sector 
 PYFLASH := pyocd flash -e sector 
 DETOOLS := detools create_patch --compression heatshrink
-SIGN := sign --key $(KEY_PATH) --header-size 0x200 --align 4 --version 0.0.0+0 --pad-header --slot-size 0xa0000
-IN_PLACE_DETOOLS := detools create_patch_in_place --memory-size 3000 --segment-size 500 --compression heatshrink
 BUILD_APP := west build -p auto -b $(BOARD) -d $(BUILD_DIR)
+SIGN := west sign -t imgtool -d $(BUILD_DIR)
 IMGTOOL_SETTINGS := --version 1.0 --header-size $(HEADER_SIZE) \
                     --slot-size $(SLOT_SIZE) --align 4 --key $(KEY_PATH)
 PAD_SCRIPT := $(PY) scripts/pad_patch.py
 DUMP_SCRIPT := $(PY) scripts/jflashrw.py read
 SET_SCRIPT := $(PY) scripts/set_current.py 
-SIGN_PATCH := $(PY) C:/NCS_SDK/v2.1.0/bootloader/mcuboot/scripts/imgtool.py 
 
 all: build-boot flash-boot build flash-image
 
@@ -97,32 +84,31 @@ build-boot:
 
 erase-slot0:
 	@echo "erase all the slot0 sector..."
-	$(PYERASE) $(SLOT0_OFFSET)+$(SLOT0_SIZE) -t nrf9160_xxaa
+	$(PYERASE) $(SLOT0_OFFSET)+$(SLOT0_SIZE) -t nrf52840
 
 erase-slot1:
 	@echo "erase all the slot1 sector..."
-	$(PYERASE) $(SLOT1_OFFSET)+$(SLOT1_SIZE) -t nrf9160_xxaa
+	$(PYERASE) $(SLOT1_OFFSET)+$(SLOT1_SIZE) -t nrf52840
 	
 flash-image:
 	@echo "Flashing latest source image to slot 0..."
-#	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf9160_xxaa $(SOURCE_PATH)
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SOURCE_PATH)
 
 flash-target:
 	@echo "Flashing latest source image to slot 0..."
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf9160_xxaa $(TARGET_PATH)
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(TARGET_PATH)
 
 flash-slot0:
 	@echo "Flashing delta-apply image to slot 0..."
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf9160_xxaa $(SLOT0_PATH)
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SLOT0_PATH)
 
 flash-slot1:
 	@echo "Flashing delta-apply image to slot 0..."
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf9160_xxaa $(SLOT1_PATH)
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SLOT1_PATH)
 
 flash-apply-target:
 	@echo "Flashing PC delta-applied image to slot 0..."
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf9160_xxaa $(TARGET_APPLY_PATH)
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(TARGET_APPLY_PATH)
 
 flash-boot:
 	@echo "Flashing latest bootloader image..."	
@@ -130,7 +116,7 @@ flash-boot:
 
 flash-patch:
 	@echo "Flashing latest patch to patch partition..."
-	$(PYFLASH) -a $(PATCH_OFFSET) -t nrf9160_xxaa $(SIGN_PATCH_PATH)
+	$(PYFLASH) -a $(PATCH_OFFSET) -t nrf52840 $(SIGN_PATCH_PATH)
 	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
 	
 create-patch:
@@ -138,25 +124,13 @@ create-patch:
 	mkdir -p $(PATCH_DIR)
 	rm -f $(PATCH_PATH)
 	$(DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)
-	cp $(PATCH_PATH) $(ORIGIN_PATCH_PATH)
 	$(PAD_SCRIPT) $(PATCH_PATH) $(MAX_PATCH_SIZE) $(PATCH_HEADER_SIZE)
-#	$(IN_PLACE_DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)		//test in-place patch 
-	rm -f $(SIGN_PATCH_PATH)			
-	$(SIGN_PATCH) $(SIGN) $(PATCH_PATH) $(SIGN_PATCH_PATH)		
-
-sign-source:
-	@echo "Signing the source file..."
-	rm -f $(SIGN_PATCH_PATH)
-	$(SIGN_PATCH) $(SIGN) $(SOURCE_PATH) $(SIGN_SOURCE_PATH)
-
-patch-info:
-	detools patch_info $(ORIGIN_PATCH_PATH) 
 
 apply-patch:
 	@echo "Applying patch..."
 	mkdir -p $(PATCH_DIR)
 	rm -f $(TARGET_APPLY_PATH)
-	detools apply_patch $(SOURCE_PATH) $(ORIGIN_PATCH_PATH) $(TARGET_APPLY_PATH)
+	detools apply_patch $(SOURCE_PATH) $(PATCH_PATH) $(TARGET_APPLY_PATH)
 
 create-reverse-patch:
 	@echo "Creating reverse patch..."
@@ -167,7 +141,7 @@ create-reverse-patch:
 	
 connect:
 	@echo "Connecting to device console.."
-	JLinkRTTLogger -device nRF9160 -if SWD -speed 5000 -rttchannel 0 /dev/stdout
+	JLinkRTTLogger -device NRF52 -if SWD -speed 5000 -rttchannel 0 /dev/stdout
 
 dump-flash: dump-slot0 dump-slot1 dump-patch
 
@@ -202,5 +176,4 @@ tools:
 	pip3 install --user pyocd
 	pip3 install --user pynrfjprog
 	pip3 install --user imgtool
-	pyocd pack install nRF9160_xxAA
 	@echo "Done"
