@@ -22,8 +22,8 @@ IMG_DIR := $(BIN_DIR)/signed_images
 PATCH_DIR := $(BIN_DIR)/patches
 DUMP_DIR := $(BIN_DIR)/flash_dumps
 
-SOURCE_PATH := $(IMG_DIR)/source.bin
-TARGET_PATH := $(IMG_DIR)/target.bin
+SOURCE_PATH := $(IMG_DIR)/source_1.0.0.bin
+TARGET_PATH := $(IMG_DIR)/target_2.0.0.bin
 PATCH_PATH := $(PATCH_DIR)/patch.bin
 SIGN_PATCH_PATH := $(PATCH_DIR)/signed_patch.bin
 REVERSE_PATCH_PATH := $(PATCH_DIR)/reverse_patch.bin

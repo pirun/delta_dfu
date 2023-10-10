@@ -16,7 +16,7 @@
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"1.0.0"
+#define FW_VERSION		"2.0.0"
 
 
 /*
@@ -97,7 +97,7 @@ void main(void)
 		//printk("btnPressFlag = %d\r\n",btnFlag);
 		if (btnFlag) 
 		{
-			printk("start delta upgrade to version %s!!!device will enter mcuboot, please wait...... \r\n", FW_VERSION);
+			printk("start delta upgrade to version %s!!! device will enter mcuboot, please wait...... \r\n", FW_VERSION);
 			if (boot_request_upgrade(BOOT_UPGRADE_PERMANENT)) 
 			{
 				printk("flash image_ok flag failed!!!\r\n");
