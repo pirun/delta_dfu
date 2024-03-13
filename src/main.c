@@ -12,11 +12,11 @@
 #include <zephyr/sys/printk.h>
 #include <inttypes.h>
 #include <zephyr/dfu/mcuboot.h>
-//#include "delta/delta.h"
+
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"2.0.0"
+#define FW_VERSION		"1.0.0"
 
 
 /*
@@ -49,27 +49,27 @@ void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t
 	gpio_pin_toggle_dt(&led);
 }
 
-void main(void)
+int main(void)
 {
-	int ret;
+	int ret = 0;
 
 	//printk("Congratulations!! Delta DFU test successful!!!!!!\r\n");
 
 	if (!device_is_ready(button.port)) {
 		printk("Error: button device %s is not ready\n", button.port->name);
-		return;
+		return ret;
 	}
 
 	ret = gpio_pin_configure_dt(&button, GPIO_INPUT);
 	if (ret != 0) {
 		printk("Error %d: failed to configure %s pin %d\n", ret, button.port->name, button.pin);
-		return;
+		return ret;
 	}
 
 	ret = gpio_pin_interrupt_configure_dt(&button, GPIO_INT_EDGE_TO_ACTIVE);
 	if (ret != 0) {
 		printk("Error %d: failed to configure interrupt on %s pin %d\n", ret, button.port->name, button.pin);
-		return;
+		return ret;
 	}
 
 	gpio_init_callback(&button_cb_data, button_pressed, BIT(button.pin));
@@ -98,7 +98,7 @@ void main(void)
 		if (btnFlag) 
 		{
 			printk("start delta upgrade to version %s!!! device will enter mcuboot, please wait...... \r\n", FW_VERSION);
-			if (boot_request_upgrade(BOOT_UPGRADE_PERMANENT)) 
+			// if (boot_request_upgrade(BOOT_UPGRADE_PERMANENT)) 
 			{
 				printk("flash image_ok flag failed!!!\r\n");
 			}
@@ -107,4 +107,6 @@ void main(void)
 		}
 		//k_msleep(SLEEP_TIME_MS);
 	}
+
+	return ret;
 }
