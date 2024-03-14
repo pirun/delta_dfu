@@ -1,12 +1,12 @@
-BOARD := nrf52840dk_nrf52840
+BOARD := nrf54l15pdk_nrf54l15_cpuapp
 PY := python 
 
 #device flash map
-SLOT0_SIZE := 0xa0000
-SLOT1_SIZE := 0x4c000
+SLOT0_SIZE := 0x100000
+SLOT1_SIZE := 0x70000
 HEADER_SIZE := 512
-SLOT0_OFFSET := 0x10000
-SLOT1_OFFSET := 0xb0000
+SLOT0_OFFSET := 0xc000
+SLOT1_OFFSET := 0x10c000
 PATCH_OFFSET := $(SLOT1_OFFSET)
 MAX_PATCH_SIZE := $(SLOT1_SIZE)
 PATCH_HEADER_SIZE := 0x8 
@@ -92,7 +92,7 @@ erase-slot1:
 	
 flash-image:
 	@echo "Flashing latest source image to slot 0..."
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SOURCE_PATH)
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf54l15 $(SOURCE_PATH)
 
 flash-target:
 	@echo "Flashing latest source image to slot 0..."
