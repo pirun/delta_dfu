@@ -8,9 +8,9 @@ EMPTY_0:
   size: 0x1000
 app:
   address: 0xc800
-  end_address: 0xc4000
+  end_address: 0x10c000
   region: flash_primary
-  size: 0xb7800
+  size: 0xff800
 mcuboot:
   address: 0x0
   end_address: 0xc000
