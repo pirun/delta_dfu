@@ -1,0 +1,22 @@
+{
+    "version": 2,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20
+    },
+    "configurePresets": [
+        {
+            "name": "build_52840",
+            "displayName": "Build for nRF52840 DK NRF52840",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build_52840",
+            "cacheVariables": {
+                "NCS_TOOLCHAIN_VERSION": "NONE",
+                "BOARD": "nrf52840dk_nrf52840",
+                "mcuboot_OVERLAY_CONFIG": "$env{ZEPHYR_BASE}/../nrf/subsys/partition_manager/partition_manager_enabled.conf;${sourceDir}/child_image/mcuboot.conf",
+                "mcuboot_DTC_OVERLAY_FILE": "$env{ZEPHYR_BASE}/../nrf/modules/mcuboot/usb.overlay",
+                "CACHED_CONF_FILE": "${sourceDir}/prj.conf"
+            }
+        }
+    ]
+}
