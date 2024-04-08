@@ -1,12 +1,23 @@
-BOARD := nrf52840dk_nrf52840
 PY := python 
 
-#device flash map
+#####nRF91600DK flash map
+# BOARD := nrf9160dk_nrf9160
+# CHIP := nrf9160
+# SLOT0_SIZE := 0xa0000
+# SLOT1_SIZE := 0x50000
+# SLOT0_OFFSET := 0x10000
+# SLOT1_OFFSET := 0xb0000
+
+#####nRF52840DK flash map
+BOARD := nrf52840dk_nrf52840
+CHIP := nrf52840
 SLOT0_SIZE := 0xaf000
 SLOT1_SIZE := 0x3D000
-HEADER_SIZE := 512
 SLOT0_OFFSET := 0x10000
 SLOT1_OFFSET := 0xbf000
+
+
+HEADER_SIZE := 512
 PATCH_OFFSET := $(SLOT1_OFFSET)
 MAX_PATCH_SIZE := $(SLOT1_SIZE)
 PATCH_HEADER_SIZE := 0x8 
@@ -22,7 +33,7 @@ IMG_DIR := $(BIN_DIR)/signed_images
 PATCH_DIR := $(BIN_DIR)/patches
 DUMP_DIR := $(BIN_DIR)/flash_dumps
 
-SOURCE_PATH := $(IMG_DIR)/source_1.6.0.bin
+SOURCE_PATH := $(IMG_DIR)/source_1.0.0.bin
 TARGET_PATH := $(IMG_DIR)/target_2.0.0.bin
 PATCH_PATH := $(PATCH_DIR)/patch.bin
 SIGN_PATCH_PATH := $(PATCH_DIR)/signed_patch.bin
@@ -84,31 +95,31 @@ build-boot:
 
 erase-slot0:
 	@echo "erase all the slot0 sector..."
-	$(PYERASE) $(SLOT0_OFFSET)+$(SLOT0_SIZE) -t nrf52840
+	$(PYERASE) $(SLOT0_OFFSET)+$(SLOT0_SIZE) -t $(CHIP)
 
 erase-slot1:
 	@echo "erase all the slot1 sector..."
-	$(PYERASE) $(SLOT1_OFFSET)+$(SLOT1_SIZE) -t nrf52840
+	$(PYERASE) $(SLOT1_OFFSET)+$(SLOT1_SIZE) -t $(CHIP)
 	
 flash-image:
 	@echo "Flashing latest source image to slot 0..."
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SOURCE_PATH)
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t $(CHIP) $(SOURCE_PATH)
 
 flash-target:
 	@echo "Flashing latest source image to slot 0..."
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(TARGET_PATH)
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t $(CHIP) $(TARGET_PATH)
 
 flash-slot0:
 	@echo "Flashing delta-apply image to slot 0..."
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SLOT0_PATH)
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t $(CHIP) $(SLOT0_PATH)
 
 flash-slot1:
 	@echo "Flashing delta-apply image to slot 0..."
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SLOT1_PATH)
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t $(CHIP) $(SLOT1_PATH)
 
 flash-apply-target:
 	@echo "Flashing PC delta-applied image to slot 0..."
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(TARGET_APPLY_PATH)
+	$(PYFLASH) -a $(SLOT0_OFFSET) -t $(CHIP) $(TARGET_APPLY_PATH)
 
 flash-boot:
 	@echo "Flashing latest bootloader image..."	
@@ -116,7 +127,7 @@ flash-boot:
 
 flash-patch:
 	@echo "Flashing latest patch to patch partition..."
-	$(PYFLASH) -a $(PATCH_OFFSET) -t nrf52840 $(SIGN_PATCH_PATH)
+	$(PYFLASH) -a $(PATCH_OFFSET) -t $(CHIP) $(SIGN_PATCH_PATH)
 	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
 	
 create-patch:
