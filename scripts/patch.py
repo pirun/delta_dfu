@@ -78,7 +78,7 @@ def sign_patch_file(sign_path):
         value = file_obj.read(4)
         offset = int.from_bytes(value,byteorder='little')
         print("file_size = 0X%08x\n" %(offset))
-        file_obj.seek(offset + 0x800 + 0x08)
+        file_obj.seek(offset + 0x200 + 0x08)
         source_hash = file_obj.read(0x20)
         print(source_hash)
         f.write(source_hash)
@@ -106,5 +106,5 @@ def sign_patch_file(sign_path):
 
 if __name__ == "__main__":
     create_patch_file(paths)
-    sign_patch_file("signature.py")
+    sign_patch_file("signature.txt")
     os.system("pause")
