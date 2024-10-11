@@ -16,7 +16,7 @@
 
 #define SLEEP_TIME_MS	1000
 
-#define FW_VERSION		"2.2.2"
+#define FW_VERSION		"1.0.0"
 
 
 /*
@@ -40,7 +40,7 @@ volatile bool btnFlag = false;
  * The led0 devicetree alias is optional. If present, we'll use it
  * to turn on the LED whenever the button is pressed.
  */
-static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led2), gpios,{0});
+static struct gpio_dt_spec led = GPIO_DT_SPEC_GET_OR(DT_ALIAS(led0), gpios,{0});
 
 void button_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
@@ -94,7 +94,7 @@ int main(void)
 	printk("Press the button\n");
 	while (1) 
 	{
-		//printk("btnPressFlag = %d\r\n",btnFlag);
+		// printk("btnPressFlag = %d\r\n",btnFlag);
 		if (btnFlag) 
 		{
 			printk("start delta upgrade to version %s!!! device will enter mcuboot, please wait...... \r\n", FW_VERSION);
@@ -106,7 +106,7 @@ int main(void)
 	
 			btnFlag = false;
 		}
-		//k_msleep(SLEEP_TIME_MS);
+		// k_msleep(SLEEP_TIME_MS);
 	}
 
 	return ret;

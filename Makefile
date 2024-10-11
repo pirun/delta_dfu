@@ -1,12 +1,12 @@
 PY := python 
 
 #####nRF91600DK flash map
-BOARD := nrf9160dk_nrf9160
-CHIP := nrf9160_xxaa
-SLOT0_SIZE := 0xa0000
-SLOT1_SIZE := 0x50000
-SLOT0_OFFSET := 0x10000
-SLOT1_OFFSET := 0xb0000
+# BOARD := nrf9160dk_nrf9160
+# CHIP := nrf9160_xxaa
+# SLOT0_SIZE := 0xa0000
+# SLOT1_SIZE := 0x50000
+# SLOT0_OFFSET := 0x10000
+# SLOT1_OFFSET := 0xb0000
 
 #####nRF52840DK flash map
 # BOARD := nrf52840dk_nrf52840
@@ -15,6 +15,14 @@ SLOT1_OFFSET := 0xb0000
 # SLOT1_SIZE := 0x3D000
 # SLOT0_OFFSET := 0x10000
 # SLOT1_OFFSET := 0xbf000
+
+#####nRF54L15PDK flash map
+BOARD := nrf54l15pdk_nrf54l15_cpuapp
+CHIP := nrf54l15
+SLOT0_SIZE := 0x100000
+SLOT1_SIZE := 0x70000
+SLOT0_OFFSET := 0xc000
+SLOT1_OFFSET := 0x10c000
 
 
 HEADER_SIZE := 512
@@ -34,7 +42,7 @@ PATCH_DIR := $(BIN_DIR)/patches
 DUMP_DIR := $(BIN_DIR)/flash_dumps
 
 SOURCE_PATH := $(IMG_DIR)/source_1.0.0.bin
-TARGET_PATH := $(IMG_DIR)/target_2.0.0.bin
+TARGET_PATH := $(IMG_DIR)/target_1.1.0.bin
 PATCH_PATH := $(PATCH_DIR)/patch.bin
 SIGN_PATCH_PATH := $(PATCH_DIR)/signed_patch.bin
 REVERSE_PATCH_PATH := $(PATCH_DIR)/reverse_patch.bin
@@ -135,7 +143,13 @@ create-patch:
 	mkdir -p $(PATCH_DIR)
 	rm -f $(PATCH_PATH)
 	$(DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)
-	$(PAD_SCRIPT) $(PATCH_PATH) $(MAX_PATCH_SIZE) $(PATCH_HEADER_SIZE)
+	@echo "printing patch information..."
+	detools patch_info $(PATCH_PATH)
+#	$(PAD_SCRIPT) $(PATCH_PATH) $(MAX_PATCH_SIZE) $(PATCH_HEADER_SIZE)
+
+patch-info:
+	@echo "printing patch information..."
+	detools patch_info $(PATCH_PATH)
 
 apply-patch:
 	@echo "Applying patch..."

@@ -58,6 +58,7 @@ def create_patch_file(path):
         # print(command)
         try:
             os.system(command)
+            os.system("detools patch_info " + patch_path)
         except:
             print("Please install detools first. [\"pip3 install --user detools\"]\r\n")
             os.system("pause")
@@ -77,10 +78,10 @@ def sign_patch_file(sign_path):
         file_obj.seek(12)
         value = file_obj.read(4)
         offset = int.from_bytes(value,byteorder='little')
-        print("file_size = 0X%08x\n" %(offset))
+        # print("source file_size = %d\n" %(offset))
         file_obj.seek(offset + 0x200 + 0x08)
         source_hash = file_obj.read(0x20)
-        print(source_hash)
+        # print(source_hash)
         f.write(source_hash)
     # write file contents to new file
     f.write(contents)
@@ -91,7 +92,7 @@ def sign_patch_file(sign_path):
         with open(sign_path,encoding='utf-8') as file_obj:
             text = eval(file_obj.read())
             sign_command = text.strip('\r\n') + ' ' + patch_path + ' ' + patch_path.replace("patch_from","signed_patch_from")
-            print(sign_command)
+            # print(sign_command)
             os.system(sign_command)
     except:
         print("Please check your imgtool command: [\"%s\"]!!!\r\n" %sign_command)
@@ -102,7 +103,7 @@ def sign_patch_file(sign_path):
 
 
 
-    print("\nFile copy done!\n")
+    print("\nPatch file signed done!!!\n")
 
 if __name__ == "__main__":
     create_patch_file(paths)
