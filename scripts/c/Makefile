@@ -31,10 +31,10 @@ SRC += detools.c
 SRC += main.c
 
 all:
-	$(CC) $(CFLAGS) $(SRC) -o detools
+	$(CC) $(CFLAGS) $(SRC) -o delta_dfu
 
 clean:
-	rm -f detools detools.o libdetools.a $(PATCH_PATH) $(IMG_DIR)/new.bin
+	rm -f delta_dfu delta_dfu.o libdetools.a $(PATCH_PATH) $(IMG_DIR)/new.bin
 
 create-patch:
 	@echo "Creating patch..."
@@ -46,7 +46,7 @@ create-patch:
 
 apply-patch:
 	@echo "Applying patch with C solution..." 
-	./detools apply_patch \
+	./delta_dfu apply_patch \
 	    $(IMG_DIR)/source_1.0.0.bin \
 	    $(PATCH_DIR)/patch.bin \
 	    $(IMG_DIR)/new.bin

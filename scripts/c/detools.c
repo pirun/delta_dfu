@@ -47,9 +47,23 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define DIV_CEIL(n, d) (((n) + (d) - 1) / (d))
 
+/* PAGE SIZE */
+#define PAGE_SIZE 					0x1000
+#define IMAGE_ARRAY_SIZE            PAGE_SIZE
+#define ERASE_PAGE_SIZE             (PAGE_SIZE*2)
+
+struct
+{
+	int addr[IMAGE_ARRAY_SIZE];
+	uint16_t size[IMAGE_ARRAY_SIZE];
+	uint16_t count;
+} image_position_adjust;
 /*
  * Utility functions.
  */
+
+/** variable used to indicate source image should be moved up how many pages before aplly */
+uint8_t move_up_pages = 0;	
 
 static size_t chunk_left(struct detools_apply_patch_chunk_t *self_p)
 {
@@ -1506,6 +1520,23 @@ int detools_apply_patch_process(struct detools_apply_patch_t *self_p,
     return (res);
 }
 
+
+static int count_backup_image_size(void )
+{
+	uint16_t i;
+	uint32_t total_size = 0;
+    // struct file_io_t *self_p = (struct file_io_t *)arg_p;
+
+	for (i = 0; i < image_position_adjust.count; i++)
+	{
+		total_size += (6 +image_position_adjust.size[i]);  //addr->4bytes len->2bytes				
+	}
+	printf("==== total_count=%d\t totat_size=%d\r\n", image_position_adjust.count,total_size);
+
+	return total_size;	
+}
+
+
 int detools_apply_patch_finalize(struct detools_apply_patch_t *self_p)
 {
     int res;
@@ -1516,6 +1547,9 @@ int detools_apply_patch_finalize(struct detools_apply_patch_t *self_p)
     do {
         res = apply_patch_process_once(self_p);
     } while (res == 0);
+
+    res = count_backup_image_size();
+    if (res) return res;
 
     return (apply_patch_common_finalize(res,
                                         &self_p->patch_reader,
@@ -2322,6 +2356,11 @@ struct file_io_t {
     FILE *ffrom_p;
     FILE *fpatch_p;
     FILE *fto_p;
+    uint32_t from_current;
+	// uint32_t from_end;
+	uint32_t to_current;
+	uint32_t erased_addr;
+    uint32_t write_size; 
 };
 
 static int file_size(FILE *file_p, size_t *size_p)
@@ -2365,35 +2404,42 @@ static int file_io_init(struct file_io_t *self_p,
 
     /* From. */
     file_p = fopen(from_p, "rb");
-
     if (file_p == NULL) {
         return (res);
     }
-
     self_p->ffrom_p = file_p;
 
     /* To. */
     file_p = fopen(to_p, "wb");
-
     if (file_p == NULL) {
         goto err1;
     }
-
     self_p->fto_p = file_p;
 
     /* Patch. */
     file_p = fopen(patch_p, "rb");
-
     if (file_p == NULL) {
         goto err2;
     }
-
     self_p->fpatch_p = file_p;
-    res = file_size(self_p->fpatch_p, patch_size_p);
 
+    res = file_size(self_p->fpatch_p, patch_size_p);
     if (res != 0) {
         goto err3;
     }
+
+    move_up_pages = (((*patch_size_p/2)/PAGE_SIZE > 0) ? ((*patch_size_p/2)/PAGE_SIZE) : 1) ;
+    printf("patch_size=%d\t move_up_pages=%d\n",*patch_size_p, move_up_pages);
+
+	self_p->from_current = PAGE_SIZE * move_up_pages;
+	self_p->to_current = 0;
+	self_p->erased_addr = 0;
+    self_p->write_size = 0;
+
+    image_position_adjust.count = 0;
+
+    printf("\nInit: from_current=0X%lX to_current=0X%lX erased_addr=0X%lX\n",
+			self_p->from_current, self_p->to_current, self_p->erased_addr);
 
     return (res);
 
@@ -2447,6 +2493,21 @@ static int file_io_from_read(void *arg_p, uint8_t *buf_p, size_t size)
 
     self_p = (struct file_io_t *)arg_p;
 
+    if (self_p->from_current < self_p->erased_addr)
+	{
+		// printf("adjust[%d]: from_current=%d\t erased_addr=%d\n", image_position_adjust.count,self_p->from_current,self_p->erased_addr);
+
+		image_position_adjust.size[image_position_adjust.count] = size;
+		image_position_adjust.count++;
+		if (image_position_adjust.count > IMAGE_ARRAY_SIZE)
+		{
+			return -DETOOLS_OUT_OF_MEMORY;				
+		}	
+	}
+
+	self_p->from_current += size;
+
+
     return (file_io_read(self_p->ffrom_p, buf_p, size));
 }
 
@@ -2455,6 +2516,8 @@ static int file_io_from_seek(void *arg_p, int offset)
     struct file_io_t *self_p;
 
     self_p = (struct file_io_t *)arg_p;
+
+    self_p->from_current += offset;
 
     return (fseek(self_p->ffrom_p, offset, SEEK_CUR));
 }
@@ -2476,7 +2539,19 @@ static int file_io_to_write(void *arg_p, const uint8_t *buf_p, size_t size)
     self_p = (struct file_io_t *)arg_p;
     res = 0;
 
-    if (size > 0) {
+    if (size > 0) 
+    {
+        self_p->write_size += size;
+        if (self_p->write_size >= ERASE_PAGE_SIZE) {
+            self_p->erased_addr =  self_p->to_current + ERASE_PAGE_SIZE;
+
+            // printf("====write_size=%d\t to_current=%d\t erased_addr = %d\n", self_p->write_size, self_p->to_current,self_p->erased_addr);
+
+            self_p->to_current += ERASE_PAGE_SIZE;
+            self_p->write_size = self_p->write_size - ERASE_PAGE_SIZE;
+	    }
+
+
         if (fwrite(buf_p, size, 1, self_p->fto_p) != 1) {
             res = -DETOOLS_FILE_WRITE_FAILED;
         }

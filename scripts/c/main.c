@@ -46,12 +46,12 @@ static void print_apply_patch_usage_and_exit(const char *name_p)
     exit(1);
 }
 
-static void print_apply_patch_in_place_usage_and_exit(const char *name_p)
-{
-    printf("Usage: %s apply_patch_in_place <memory-file> <patch-file>\n",
-           name_p);
-    exit(1);
-}
+// static void print_apply_patch_in_place_usage_and_exit(const char *name_p)
+// {
+//     printf("Usage: %s apply_patch_in_place <memory-file> <patch-file>\n",
+//            name_p);
+//     exit(1);
+// }
 
 int main(int argc, const char *argv[])
 {
@@ -67,16 +67,18 @@ int main(int argc, const char *argv[])
         }
 
         res = detools_apply_patch_filenames(argv[2], argv[3], argv[4]);
-    } else if (strcmp("apply_patch_in_place", argv[1]) == 0) {
-        if (argc != 4) {
-            print_apply_patch_in_place_usage_and_exit(argv[0]);
-        }
+    } 
+    // else if (strcmp("apply_patch_in_place", argv[1]) == 0) {
+    //     if (argc != 4) {
+    //         print_apply_patch_in_place_usage_and_exit(argv[0]);
+    //     }
 
-        res = detools_apply_patch_in_place_filenames(argv[2],
-                                                     argv[3],
-                                                     NULL,
-                                                     NULL);
-    } else {
+    //     res = detools_apply_patch_in_place_filenames(argv[2],
+    //                                                  argv[3],
+    //                                                  NULL,
+    //                                                  NULL);
+    // } 
+    else {
         print_usage_and_exit(argv[0]);
     }
 
