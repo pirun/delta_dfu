@@ -64,6 +64,10 @@ struct
 
 /** variable used to indicate source image should be moved up how many pages before aplly */
 uint8_t move_up_pages = 0;	
+size_t patch_length = 0;
+size_t source_size = 0;
+
+static int file_size(FILE *file_p, size_t *size_p);
 
 static size_t chunk_left(struct detools_apply_patch_chunk_t *self_p)
 {
@@ -1378,6 +1382,44 @@ static int apply_patch_process_once(struct detools_apply_patch_t *self_p)
     return (res);
 }
 
+static int simulate_delta_dfu(size_t target_size)
+{
+	uint16_t i;
+	uint32_t backup_size = 0;
+    size_t slot0_size =0;
+    size_t slot1_size =0;
+    uint32_t first_apply_time = 0;
+    uint32_t second_apply_time = 0;
+    uint32_t total_time = 0;
+
+	for (i = 0; i < image_position_adjust.count; i++)
+	{
+		backup_size += (6 +image_position_adjust.size[i]);  //addr->4bytes len->2bytes				
+	}
+	// printf("==== total_count=%d\t backup_size=%d\r\n", image_position_adjust.count,backup_size);
+    printf("source size:                %d\n", source_size);
+    printf("target size:                %d\n", target_size);
+    printf("patch size:                 %d\n", patch_length);
+    printf("backup size:                %d\n", backup_size);
+    printf("move up pages:              %d\n", move_up_pages);
+
+    slot0_size = ((source_size + (move_up_pages+1)*PAGE_SIZE) > target_size) ? 
+                 (source_size + (move_up_pages+1)*PAGE_SIZE) : 
+                 target_size;
+
+    slot1_size = patch_length + backup_size + 5*PAGE_SIZE;
+
+    first_apply_time = ((source_size + backup_size) / 1024 + 1) * 22;
+    second_apply_time = (target_size / 1024 + 1) * 62;
+    total_time = ((first_apply_time + second_apply_time + 1000) + 500)/ 1000;
+
+    printf("Minimal_slot0_size:         %d Bytes\n", slot0_size);
+    printf("Minimal_slot1_size:         %d Bytes\n", slot1_size);
+    printf("Minimal_upgrade_time:       %d s\n", total_time);
+
+	return backup_size;	
+}
+
 static int apply_patch_common_finalize(
     int res,
     struct detools_apply_patch_patch_reader_t *patch_reader_p,
@@ -1403,6 +1445,9 @@ static int apply_patch_common_finalize(
         res = (int)to_size;
     }
 
+    /** simulate the time and flash usage during the delta dfu */
+    simulate_delta_dfu(to_size);
+   
     return (res);
 }
 
@@ -1521,21 +1566,6 @@ int detools_apply_patch_process(struct detools_apply_patch_t *self_p,
 }
 
 
-static int count_backup_image_size(void )
-{
-	uint16_t i;
-	uint32_t total_size = 0;
-    // struct file_io_t *self_p = (struct file_io_t *)arg_p;
-
-	for (i = 0; i < image_position_adjust.count; i++)
-	{
-		total_size += (6 +image_position_adjust.size[i]);  //addr->4bytes len->2bytes				
-	}
-	printf("==== total_count=%d\t totat_size=%d\r\n", image_position_adjust.count,total_size);
-
-	return total_size;	
-}
-
 
 int detools_apply_patch_finalize(struct detools_apply_patch_t *self_p)
 {
@@ -1547,9 +1577,6 @@ int detools_apply_patch_finalize(struct detools_apply_patch_t *self_p)
     do {
         res = apply_patch_process_once(self_p);
     } while (res == 0);
-
-    res = count_backup_image_size();
-    if (res) return res;
 
     return (apply_patch_common_finalize(res,
                                         &self_p->patch_reader,
@@ -2399,7 +2426,6 @@ static int file_io_init(struct file_io_t *self_p,
 {
     int res;
     FILE *file_p;
-
     res = -DETOOLS_FILE_OPEN_FAILED;
 
     /* From. */
@@ -2408,6 +2434,10 @@ static int file_io_init(struct file_io_t *self_p,
         return (res);
     }
     self_p->ffrom_p = file_p;
+    res = file_size(self_p->ffrom_p, &source_size);
+    if (res != 0) {
+        goto err3;
+    }
 
     /* To. */
     file_p = fopen(to_p, "wb");
@@ -2427,9 +2457,12 @@ static int file_io_init(struct file_io_t *self_p,
     if (res != 0) {
         goto err3;
     }
+    patch_length = *patch_size_p;
 
-    move_up_pages = (((*patch_size_p/2)/PAGE_SIZE > 0) ? ((*patch_size_p/2)/PAGE_SIZE) : 1) ;
-    printf("patch_size=%d\t move_up_pages=%d\n",*patch_size_p, move_up_pages);
+    move_up_pages = (((*patch_size_p/2)/PAGE_SIZE > 0) ? ((*patch_size_p/2)/PAGE_SIZE) : 1);
+    // printf("source_size:                %d\n", source_size);
+    // printf("patch_size:                 %d\n", *patch_size_p);
+    // printf("move_up_pages:              %d\n", move_up_pages);
 
 	self_p->from_current = PAGE_SIZE * move_up_pages;
 	self_p->to_current = 0;
@@ -2438,8 +2471,8 @@ static int file_io_init(struct file_io_t *self_p,
 
     image_position_adjust.count = 0;
 
-    printf("\nInit: from_current=0X%lX to_current=0X%lX erased_addr=0X%lX\n",
-			self_p->from_current, self_p->to_current, self_p->erased_addr);
+    // printf("\nInit: from_current=0X%lX to_current=0X%lX erased_addr=0X%lX\n",
+	// 		self_p->from_current, self_p->to_current, self_p->erased_addr);
 
     return (res);
 

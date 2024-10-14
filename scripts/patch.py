@@ -7,8 +7,11 @@ paths = "../binaries/signed_images"
 sign_patch = "../binaries/patches/signed_patch.bin"
 patch_path = "../binaries/patches/patch"
 source_path = ''
+new_path = "../binaries/signed_images/new.bin"
+
 #command = "detools create_patch --compression heatshrink binaries/signed_images/source.bin binaries/signed_images/target.bin binaries/patches/patch1.bin"
 command = "detools create_patch --compression heatshrink "
+simulate_command = "delta_dfu apply_patch "
 source_version = ''
 target_version = ''
 
@@ -17,6 +20,7 @@ def padded_hex(s,p):
 
 def create_patch_file(path):
     global command
+    global simulate_command
     global patch_path
     global source_path
     global source_version
@@ -58,11 +62,14 @@ def create_patch_file(path):
         # print(command)
         try:
             os.system(command)
-            os.system("detools patch_info " + patch_path)
+            # os.system("detools patch_info " + patch_path)
+            # print("\033[1;32mSimulator info:\033[0m")
+            simulate_command += source_path + ' ' + patch_path + ' ' + new_path
+            os.system(simulate_command)
+            
         except:
             print("Please install detools first. [\"pip3 install --user detools\"]\r\n")
             os.system("pause")
-
 
 
 def sign_patch_file(sign_path):
@@ -79,7 +86,7 @@ def sign_patch_file(sign_path):
         value = file_obj.read(4)
         offset = int.from_bytes(value,byteorder='little')
         # print("source file_size = %d\n" %(offset))
-        file_obj.seek(offset + 0x200 + 0x08)
+        file_obj.seek(offset + 0x800 + 0x08)
         source_hash = file_obj.read(0x20)
         # print(source_hash)
         f.write(source_hash)
@@ -102,8 +109,7 @@ def sign_patch_file(sign_path):
         copyfile(patch_path.replace("patch_from","signed_patch_from"), sign_patch)
 
 
-
-    print("\nPatch file signed done!!!\n")
+    # print("\nPatch file signed done!!!\n")
 
 if __name__ == "__main__":
     create_patch_file(paths)
