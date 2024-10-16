@@ -64,7 +64,7 @@ def create_patch_file(path):
             os.system(command)
             # os.system("detools patch_info " + patch_path)
             # print("\033[1;32mSimulator info:\033[0m")
-            simulate_command += source_path + ' ' + patch_path + ' ' + new_path
+            simulate_command += source_path + ' ' + patch_path + ' ' + new_path + ' 54' 
             os.system(simulate_command)
             
         except:
