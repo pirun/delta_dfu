@@ -159,7 +159,7 @@ def sign_patch_file_by_config(build_dir):
         mcuboot_key = ZEPHYR_BASE + '/../bootloader/mcuboot/' + mcuboot_key
 
     image_version = awklike('CONFIG_MCUBOOT_IMGTOOL_SIGN_VERSION=',
-                            build_dir + '/zephyr/.config')
+                            build_dir + '/nrf_desktop/zephyr/.config')
     fw_info_offset = awklike('CONFIG_PM_PARTITION_SIZE_MCUBOOT_PAD=', build_dir +
                              '/mcuboot/zephyr/.config')
     pm_mcuboot_primary_size = int(awklike('PM_MCUBOOT_PRIMARY_APP_SIZE=', build_dir +
@@ -182,8 +182,8 @@ def generate_dfu_zip(build_dir):
 
     copyfile(patch_path.replace("patch_from", "signed_patch_from"), "app_update.bin")
 
-    board = awklike('CONFIG_BOARD=', build_dir + '/zephyr/.config')
-    soc = awklike('CONFIG_SOC=', build_dir + '/zephyr/.config')
+    board = awklike('CONFIG_BOARD=', build_dir + '/nrf_desktop/zephyr/.config')
+    soc = awklike('CONFIG_SOC=', build_dir + '/nrf_desktop/zephyr/.config')
     loadaddr = awklike('PM_APP_ADDRESS=', build_dir + '/pm.config')
 # /generate_zip.py --bin-files
 # C:/ncs/v2.6.99-cs1_gazell/nrf/applications/nrf_desktop/build_54l/zephyr/app_update.bin
@@ -199,7 +199,7 @@ def generate_dfu_zip(build_dir):
     --bin-files "app_update.bin"\
     --output dfu_application.zip\
     --name nrf_appl\
-    --meta-info-file {build_dir}/zephyr/zephyr.meta\
+    --meta-info-file {build_dir}/mcuboot/zephyr/zephyr.meta\
     load_address={loadaddr}\
     version_MCUBOOT={image_version}\
     type=application\
