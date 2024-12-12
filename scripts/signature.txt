@@ -1,2 +1,1 @@
-"python  C:/ncs/v2.8.0/bootloader/mcuboot/scripts/imgtool.py  sign --key C:/ncs/v2.8.0/bootloader/mcuboot/root-ec-p256.pem --header-size 0x200 --align 4 --version 0.0.0+0 --pad-header --slot-size 0xa0000"
-
+"python  C:/ncs/v2.8.0_working/bootloader/mcuboot/scripts/imgtool.py  sign --key C:/ncs/v2.8.0_working/nrf/applications/nrf_desktop/configuration/nrf54l15dk_nrf54l15_cpuapp/images/mcuboot/mcuboot_private.pem --pure --header-size 0x800 --align 4 --version 2.0.0+0 --pad-header --slot-size 0xff800"

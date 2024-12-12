@@ -169,7 +169,7 @@ def sign_patch_file_by_config(build_dir):
     # print ('patch_path: ' + patch_path)
     # Generate net_core_app_update.bin
     os_cmd = f'{sys.executable} {ZEPHYR_BASE}/../bootloader/mcuboot/scripts/imgtool.py sign --key\
-    {mcuboot_key} --header-size {fw_info_offset} --align 4 --version {image_version}\
+    {mcuboot_key} --pure --header-size {fw_info_offset} --align 4 --version {image_version}\
     --pad-header --slot-size {pm_mcuboot_primary_size}  {patch_path}  ' + patch_path.replace("patch_from", "signed_patch_from")
     ret_val = os.system(os_cmd)
     if ret_val:
